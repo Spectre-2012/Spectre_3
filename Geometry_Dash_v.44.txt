@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Geometry Dash: Ultimate Pro v5.0 - Accounts & Economy Update</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800;900&display=swap');
+        
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; user-select: none; }
+        canvas { display: block; margin: 0 auto; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #888; }
+
+        /* LOGIN SCREEN STYLES UPDATED */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .login-box { background: #111; border: 4px solid #ff0000; border-radius: 20px; padding: 40px; text-align: center; width: 400px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.3); }
+        .login-title { font-size: 30px; color: #ff0000; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; text-shadow: 0 0 20px rgba(255,0,0,0.5); }
+        .login-subtitle { font-size: 14px; color: #888; margin-bottom: 25px; }
+        .login-label { color: #aaa; font-size: 12px; text-align: left; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .login-input { width: 90%; padding: 15px; margin-bottom: 15px; background: #222; border: 2px solid #555; border-radius: 10px; color: white; font-size: 18px; text-align: center; outline: none; font-family: 'Montserrat', sans-serif; }
+        .login-input:focus { border-color: #ff0000; box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+        .login-btn { background: #00ffcc; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 10px; width: 100%; text-transform: uppercase; transition: 0.2s; margin-top: 10px; }
+        .login-btn:hover { background: #fff; transform: scale(1.05); }
+        .error-msg { color: #ff4444; margin-top: 15px; font-weight: bold; display: none; }
+
+        /* LOADING & UI */
+        #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #004488 0%, #000022 100%); z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
+        .loading-title-text { font-style: italic; font-size: 60px; color: #fff; text-shadow: 0 0 20px #00ffcc; margin-bottom: 30px; font-weight: 900; letter-spacing: 2px; }
+        .geo-face { width: 120px; height: 120px; background: linear-gradient(135deg, #00ffcc, #0088aa); border: 5px solid white; margin-bottom: 40px; position: relative; animation: bounce 0.4s infinite alternate ease-in-out; box-shadow: 0 0 80px rgba(0, 255, 204, 0.6); }
+        .geo-eye { position: absolute; top: 35px; width: 30px; height: 30px; background: black; border: 4px solid white; }
+        .left-eye { left: 18px; } .right-eye { right: 18px; }
+        .geo-mouth { position: absolute; bottom: 25px; left: 30px; width: 60px; height: 12px; background: black; border: 3px solid white; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-20px); } }
+        .loading-bar-container { width: 600px; height: 25px; background: #111; border-radius: 12px; overflow: hidden; border: 3px solid white; }
+        .loading-bar-fill { height: 100%; background: linear-gradient(90deg, #00ffcc, #00aa66); width: 0%; transition: width 0.04s linear; }
+        .loading-text { color: #00ffcc; font-family: monospace; font-size: 20px; margin-top: 20px; text-shadow: 0 0 10px #00ffcc; }
+
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: none; }
+
+        .top-widgets { position: absolute; top: 20px; right: 20px; display: flex; gap: 12px; pointer-events: auto; z-index: 100; flex-wrap: wrap; justify-content: flex-end; width: 85%; }
+        .widget { background: rgba(0,0,0,0.9); border: 3px solid; padding: 10px 18px; border-radius: 50px; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s; color: white; }
+        .widget:hover { transform: scale(1.1); background: #222; }
+        
+        #cupWidget { border-color: #ffd700; color: #ffd700; }
+        #gemWidget { border-color: #39ff14; color: #39ff14; text-shadow: 0 0 10px #39ff14; cursor: default; }
+        #shopWidget { background: #5500aa; border-color: #9933ff; color: #fff; }
+        #missionWidget { background: #cc6600; border-color: #ffaa00; color: #fff; }
+        
+        #devWidget { background: linear-gradient(90deg, #ff00cc, #00ccff); border-color: #fff; color: #fff; text-shadow: 0 0 5px #000; box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
+        #devSettingsWidget { background: #333; border-color: #aaa; color: #fff; display: none; }
+        #devExitWidget { background: #cc0000; border-color: #ff4444; color: #fff; display: none; }
+
+        .menu-box {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; 
+            background-image: radial-gradient(#151515 15%, transparent 16%), radial-gradient(#151515 15%, transparent 16%);
+            background-size: 60px 60px; background-position: 0 0, 30px 30px;
+            padding: 40px; padding-top: 100px; box-sizing: border-box; text-align: center; color: white;
+            pointer-events: auto; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 50;
+        }
+        
+        .main-menu-info { margin-bottom: 50px; }
+        .current-level-title { font-size: 28px; color: #888; margin-bottom: 15px; }
+        .active-level-name { font-size: 70px; font-weight: 900; color: white; text-transform: uppercase; text-shadow: 0 0 40px rgba(255,255,255,0.3); }
+        .welcome-user { font-size: 16px; color: #00ffcc; margin-bottom: 10px; }
+
+        .main-menu-actions { display: flex; gap: 35px; align-items: center; }
+        .btn-play { width: 280px; height: 140px; background: #FFD700; border: 6px solid white; color: black; font-size: 55px; font-weight: 900; border-radius: 25px; cursor: pointer; box-shadow: 0 0 60px rgba(255, 215, 0, 0.4); transition: all 0.2s; display: flex; justify-content: center; align-items: center; }
+        .btn-play:hover { transform: scale(1.1); background: #ffe033; box-shadow: 0 0 80px rgba(255, 215, 0, 0.6); }
+        .btn-levels { width: 140px; height: 140px; background: #222; border: 5px solid #444; color: white; font-size: 22px; font-weight: bold; border-radius: 25px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; }
+        .btn-levels span { font-size: 50px; }
+        .btn-levels:hover { background: #333; border-color: #fff; transform: scale(1.05); }
+        
+        .btn-competitive { width: 140px; height: 140px; background: linear-gradient(135deg, #ff6600, #ff0066); border: 5px solid #ffd700; color: white; font-size: 18px; font-weight: bold; border-radius: 25px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 30px rgba(255, 102, 0, 0.4); }
+        .btn-competitive span { font-size: 50px; }
+        .btn-competitive:hover { background: linear-gradient(135deg, #ff8800, #ff3388); border-color: #fff; transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 102, 0, 0.6); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; justify-content: center; align-items: center; pointer-events: auto; }
+        .modal-container { width: 800px; max-height: 85vh; background: #151515; border: 4px solid #fff; border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { padding: 28px; background: #222; font-size: 32px; font-weight: bold; color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .modal-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .close-btn { cursor: pointer; font-size: 36px; transition: 0.2s; }
+        .close-btn:hover { color: #ff4444; transform: scale(1.2); }
+
+        #levelsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; padding: 20px; box-sizing: border-box; }
+        .level-card { background: #111; border: 3px solid; border-radius: 15px; padding: 20px; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.2s; text-align: left; opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+        .level-card.active-level { opacity: 1; pointer-events: auto; filter: grayscale(0); transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .level-card:hover { transform: scale(1.08); filter: brightness(1.2); }
+        .mini-progress-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #000; }
+        .mini-progress-fill { height: 100%; width: 0%; }
+        
+        #trophyRoadModal .modal-container { border-color: #ffd700; width: 600px; }
+        #trophyRoadModal .modal-header { background: #ffd700; color: black; }
+        .trophy-list { flex: 1; overflow-y: auto; padding: 20px; }
+        .trophy-item { background: #222; margin-bottom: 15px; padding: 15px; border-left: 6px solid #555; color: #888; display: flex; align-items: center; justify-content: space-between; border-radius: 5px; transition: 0.2s; }
+        .trophy-item.unlocked { background: #2a2a2a; border-left-color: #ffd700; color: white; box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); }
+        
+        #competitiveModal .modal-container { border-color: #ff6600; width: 650px; }
+        #competitiveModal .modal-header { background: linear-gradient(90deg, #ff6600, #ff0066); color: white; }
+        .ranking-list { flex: 1; overflow-y: auto; padding: 20px; }
+        .ranking-item { background: #1a1a1a; margin-bottom: 12px; padding: 18px 20px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; border: 2px solid #333; }
+        .ranking-item:hover { background: #252525; border-color: #555; }
+        .ranking-item.top-1 { background: linear-gradient(90deg, #ffd700, #ff8800); border-color: #ffd700; color: black; }
+        .ranking-item.top-2 { background: linear-gradient(90deg, #c0c0c0, #888888); border-color: #c0c0c0; color: black; }
+        .ranking-item.top-3 { background: linear-gradient(90deg, #cd7f32, #8b4513); border-color: #cd7f32; color: white; }
+        .ranking-item.current-user { border-color: #00ffcc; box-shadow: 0 0 15px rgba(0,255,204,0.3); }
+        .ranking-position { font-size: 24px; font-weight: 900; width: 50px; text-align: center; }
+        .ranking-info { flex: 1; margin-left: 15px; }
+        .ranking-name { font-weight: bold; font-size: 18px; }
+        .ranking-trophies { color: #ffd700; font-weight: bold; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        
+        #shopModal .modal-container { border-color: #9933ff; height: 85vh; } #shopModal .modal-header { background: #9933ff; color: white; }
+        .shop-tabs { display: flex; border-bottom: 2px solid #555; background: #222; }
+        .shop-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #888; transition: 0.2s; background: #1a1a1a; }
+        .shop-tab.active { color: white; background: #5500aa; }
+        .shop-grid { flex: 1; overflow-y: auto; padding: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .skin-card { background: #222; border: 3px solid #444; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .skin-card:hover { transform: translateY(-5px); border-color: #fff; }
+        .skin-preview { width: 50px; height: 50px; margin: 0 auto 8px; display: flex; justify-content: center; align-items: center; border-radius: 8px; }
+        .skin-equipped { background: #1a0525; border-color: #cc00ff; box-shadow: 0 0 15px #cc00ff; }
+        .skin-equipped-2 { background: #251a05; border-color: #ffaa00; box-shadow: 0 0 15px #ffaa00; }
+        .skin-owned { color: #00ff00; font-weight: bold; font-size: 12px; margin-top: 5px; }
+        .skin-price { color: #00ccff; font-weight: bold; margin-top: 5px; font-size: 12px; }
+        
+        .slot-selector { display:flex; gap:10px; justify-content:center; padding: 10px; background:#111; border-bottom:1px solid #333; flex-wrap: wrap; }
+        .slot-btn { padding: 8px 15px; border: 2px solid #555; border-radius: 8px; cursor: pointer; color:#888; font-weight:bold; }
+        .slot-btn.active-slot { border-color: #00ffcc; color: #00ffcc; background: rgba(0,255,204,0.1); }
+        .key-bind-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; text-transform: uppercase; }
+        .key-bind-btn:hover { background: #555; border-color: white; }
+        .key-bind-btn.waiting { background: #ffaa00; color: black; border-color: #ff0000; animation: pulse 0.5s infinite; }
+
+        #missionsModal .modal-container { border-color: #ffaa00; width: 600px; height: 600px; } #missionsModal .modal-header { background: #ffaa00; color: black; }
+        .mission-list { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .mission-card { background: #222; padding: 20px; border-radius: 10px; border: 2px solid #555; display: flex; justify-content: space-between; align-items: center; }
+        .btn-claim { background: #00cc00; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; animation: pulse 1s infinite; font-size: 16px; }
+        .btn-claimed { background: #555; color: #aaa; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: default; font-size: 16px; }
+
+        #devSettingsModal .modal-container { width: 500px; border-color: #aaa; }
+        .dev-setting-row { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; }
+        .dev-toggle { width: 50px; height: 25px; background: #555; border-radius: 25px; position: relative; cursor: pointer; transition: 0.3s; }
+        .dev-toggle.active { background: #00ff00; }
+        .dev-toggle-circle { width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2.5px; left: 2.5px; transition: 0.3s; }
+        .dev-toggle.active .dev-toggle-circle { left: 27.5px; }
+
+        .popup-box { background: rgba(10, 10, 20, 0.98); border: 4px solid #fff; padding: 40px; text-align: center; color: white; pointer-events: auto; display: none; min-width: 500px; border-radius: 20px; box-shadow: 0 0 100px rgba(0,0,0,1); }
+        .btn-container { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
+        .action-btn { padding: 22px 0; font-size: 26px; font-weight: bold; color: #fff; border: 4px solid white; cursor: pointer; text-transform: uppercase; width: 220px; border-radius: 12px; text-align: center; }
+        .btn-retry { background: #00cc00; text-shadow: 1px 1px 0 #000; box-shadow: 0 0 25px #00ff00; }
+        .btn-exit { background: #cc0000; text-shadow: 1px 1px 0 #000; box-shadow: 0 0 25px #ff0000; }
+
+        #progressBar { position: absolute; top: 0; left: 0; width: 100%; height: 12px; background: rgba(255,255,255,0.1); display: none; }
+        #progressFill { height: 100%; background: #00ffcc; width: 0%; box-shadow: 0 0 20px #00ffcc; transition: width 0.1s linear; }
+        #ingamePercent { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 30px; font-weight: 900; color: white; text-shadow: 2px 2px 0 black; display: none; }
+
+        .tool-btn { min-width: 60px; height: 50px; background: #333; border: 3px solid #555; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; font-size: 11px; user-select: none; transition: 0.2s; color: white; padding: 5px 10px; text-transform: uppercase; text-align:center; }
+        .tool-btn:hover { border-color: white; transform: scale(1.05); background: #444; }
+        .tool-btn.selected { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; background: #004444; }
+
+        .btn-delete-level { background: #cc0000; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-delete-level:hover { background: #ff0000; }
+        
+        .level-edit-item { background: #222; padding: 14px 18px; border: 2px solid #444; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 10px; margin-bottom: 10px; font-size: 16px; }
+        .level-edit-item:hover { border-color: #666; }
+
+        .save-indicator { position: fixed; bottom: 20px; right: 20px; background: #00cc00; color: white; padding: 18px 30px; border-radius: 12px; font-weight: bold; z-index: 99999; display: none; box-shadow: 0 0 25px #00ff00; font-size: 18px; }
+        
+        .storage-info { position: fixed; bottom: 8px; left: 8px; background: rgba(0,0,0,0.5); color: #555; padding: 4px 8px; border-radius: 5px; font-size: 9px; z-index: 99999; opacity: 0.6; }
+
+        /* DUAL SKILL BUTTONS */
+        #skillButtonsWrapper {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: none; /* Flex when active */
+            gap: 20px;
+            z-index: 5000;
+            pointer-events: auto;
+        }
+
+        .skill-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ffcc, #0088aa);
+            box-shadow: 0 0 30px rgba(0,255,204,0.6);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 4px solid white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .skill-btn:active { transform: scale(0.95); }
+        
+        .skill-btn.disabled-skill {
+            filter: grayscale(0.8) brightness(0.5);
+            cursor: not-allowed;
+            border-color: #555;
+            box-shadow: none;
+        }
+        
+        .skill-btn.active-skill {
+            animation: skillPulse 0.5s infinite alternate;
+            border-color: #ffff00;
+            filter: brightness(0.6);
+        }
+        
+        @keyframes skillPulse {
+            from { box-shadow: 0 0 20px #ffff00; border-width: 4px; }
+            to { box-shadow: 0 0 40px #ffff00; border-width: 6px; }
+        }
+
+        .skill-icon { font-size: 30px; margin-bottom: 2px; }
+        .skill-name { font-size: 10px; font-weight: 900; color: white; text-transform: uppercase; text-shadow: 1px 1px 2px black; width: 90%; line-height: 1.1; }
+        .skill-key { position: absolute; top:5px; left:50%; transform:translateX(-50%); font-size:10px; background:rgba(0,0,0,0.7); padding:2px 6px; border-radius:4px; color:#fff; border:1px solid #aaa; }
+
+        .skill-cooldown-overlay {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            height: 0%;
+            background: rgba(0,0,0,0.8);
+            transition: height 0.1s linear;
+        }
+        
+        .gem-loot-display {
+            color: #39ff14; font-size: 24px; font-weight: bold; margin-bottom: 15px; 
+            text-shadow: 0 0 10px #39ff14;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="save-indicator" id="saveIndicator">💾 GUARDADO PERMANENTE</div>
+    <div class="storage-info" id="storageInfo">📁 Cargando...</div>
+
+    <div id="loginScreen">
+        <div class="login-box">
+            <div class="login-title">🔒 Acceso Restringido</div>
+            <div class="login-subtitle">Sistema de Seguridad v5.0</div>
+            <div class="login-label">Nombre de Usuario</div>
+            <input type="text" id="userInput" class="login-input login-input-user" placeholder="Tu nombre...">
+            <div class="login-label">Código de Acceso</div>
+            <input type="password" id="passInput" class="login-input" placeholder="••••">
+            <button class="login-btn" onclick="checkPassword()">ENTRAR</button>
+            <div id="errorMsg" class="error-msg">❌ CÓDIGO INCORRECTO</div>
+        </div>
+    </div>
+
+    <div id="loadingScreen">
+        <h1 class="loading-title-text">GEOMETRY DASH</h1>
+        <div class="geo-face"><div class="geo-eye left-eye"></div><div class="geo-eye right-eye"></div><div class="geo-mouth"></div></div>
+        <div class="loading-bar-container"><div class="loading-bar-fill" id="loadFill"></div></div>
+        <div class="loading-text"><span id="loadText">CARGANDO...</span> <span id="loadPercent">0%</span></div>
+    </div>
+
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div id="ingamePercent">0%</div>
+
+    <!-- DUAL SKILL BUTTONS -->
+    <div id="skillButtonsWrapper">
+        <div id="skillBtn1" class="skill-btn" onclick="activateSkill(0)">
+            <div class="skill-cooldown-overlay" id="skillOverlay1"></div>
+            <div class="skill-key" id="skillKeyDisplay1">Q</div>
+            <div class="skill-icon" id="skillIcon1">🛡️</div>
+            <div class="skill-name" id="skillName1"></div>
+        </div>
+        <div id="skillBtn2" class="skill-btn" onclick="activateSkill(1)">
+            <div class="skill-cooldown-overlay" id="skillOverlay2"></div>
+            <div class="skill-key" id="skillKeyDisplay2">E</div>
+            <div class="skill-icon" id="skillIcon2">⚡</div>
+            <div class="skill-name" id="skillName2"></div>
+        </div>
+    </div>
+
+    <div id="trophyRoadModal" class="modal-overlay"><div class="modal-container"><div class="modal-header"><span>CAMINO DE TROFEOS</span><span class="close-btn" onclick="toggleModal('trophyRoadModal')">×</span></div><div class="modal-body"><div class="trophy-list" id="trophyList"></div></div></div></div>
+    
+    <div id="competitiveModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>🏆 RANKING MUNDIAL</span><span class="close-btn" onclick="toggleModal('competitiveModal')">×</span></div>
+            <div class="modal-body">
+                <div class="ranking-list" id="rankingList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="shopModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>TIENDA</span><span class="close-btn" onclick="toggleModal('shopModal')">×</span></div>
+            <div class="shop-tabs">
+                <div class="shop-tab active" id="tabSkins" onclick="switchShopTab('skins')">ASPECTOS</div>
+                <div class="shop-tab" id="tabTrails" onclick="switchShopTab('trails')">EFECTOS</div>
+                <div class="shop-tab" id="tabSkills" onclick="switchShopTab('skills')">HABILIDADES</div>
+            </div>
+            <!-- SLOT SELECTOR (Only for Skills) -->
+            <div class="slot-selector" id="skillSlotSelector" style="display:none;">
+                <div style="display:flex; align-items:center;">
+                    <div class="slot-btn active-slot" id="selectSlot1" onclick="selectSkillSlot(0)">EDITANDO SLOT 1</div>
+                    <button class="key-bind-btn" id="keyBindBtn1" onclick="startKeyBinding(0)">Tecla: Q</button>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div class="slot-btn" id="selectSlot2" onclick="selectSkillSlot(1)">EDITANDO SLOT 2</div>
+                    <button class="key-bind-btn" id="keyBindBtn2" onclick="startKeyBinding(1)">Tecla: E</button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="shop-grid" id="shopGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="missionsModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>MISIONES DIARIAS</span><span class="close-btn" onclick="toggleModal('missionsModal')">×</span></div>
+            <div class="modal-body">
+                <div class="mission-list" id="missionList"></div>
+                <div style="text-align:center; padding: 10px; color: #888; background:#1a1a1a;">Las misiones se reinician cada 24 horas</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="levelsModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>NIVELES</span><span class="close-btn" onclick="toggleModal('levelsModal')">×</span></div>
+            <div class="modal-body" style="overflow-y: auto;">
+                <div id="levelsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="devModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>LOGIN DEVELOPER</span><span class="close-btn" onclick="toggleModal('devModal')">×</span></div>
+            <div class="modal-body" style="padding: 20px; align-items: center; justify-content: center; background: #000;">
+                <input type="text" id="devUser" class="login-input" style="border-color: #00ff00; color: #00ff00;" placeholder="USUARIO">
+                <input type="password" id="devPass" class="login-input" style="border-color: #00ff00; color: #00ff00;" placeholder="CONTRASEÑA">
+                <button class="login-btn" onclick="checkDevAuth()" style="background: #002200; color: #00ff00; border: 1px solid #00ff00;">ACCEDER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="devSettingsModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>⚙️ AJUSTES DEV</span><span class="close-btn" onclick="toggleModal('devSettingsModal')">×</span></div>
+            <div class="modal-body" style="padding: 20px; background: #111;">
+                <div class="dev-setting-row">
+                    <span>Creador de Niveles</span>
+                    <button style="background:#00ccff; color:black; border:none; padding:5px 15px; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="openLevelCreatorMenu()">ABRIR</button>
+                </div>
+                <div class="dev-setting-row">
+                    <span>Gestor de Música</span>
+                    <button style="background:#ff00cc; color:white; border:none; padding:5px 15px; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('musicUploadGlobal').click()">🎵 INSERTAR MÚSICA</button>
+                    <input type="file" id="musicUploadGlobal" hidden accept="audio/mp3,audio/wav" onchange="handleGlobalMusicUpload(this)">
+                </div>
+                <div class="dev-setting-row">
+                    <span>Sube 500 Copas</span>
+                    <button style="background:#00ff00; color:black; border:none; padding:5px 15px; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="devAddCups()">+500 🏆</button>
+                </div>
+                <div class="dev-setting-row">
+                    <span>Sin Obstáculos (God Mode)</span>
+                    <div class="dev-toggle" id="toggleGod" onclick="toggleDevSetting('godMode')"><div class="dev-toggle-circle"></div></div>
+                </div>
+                <div class="dev-setting-row">
+                    <span>Infinitas Gemas</span>
+                    <div class="dev-toggle" id="toggleInfGems" onclick="toggleDevSetting('infGems')"><div class="dev-toggle-circle"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="musicAssignModal" class="modal-overlay">
+        <div class="modal-container" style="width: 500px; border-color: #ff00cc;">
+            <div class="modal-header" style="background: #990099;"><span>🎵 ASIGNAR MÚSICA</span><span class="close-btn" onclick="toggleModal('musicAssignModal')">×</span></div>
+            <div class="modal-body" style="padding: 20px; background: #111;">
+                <div style="margin-bottom: 20px; color: #ff00cc; font-weight: bold;">Canción cargada: <span id="musicFileName" style="color:white;"></span></div>
+                
+                <div style="margin-bottom:10px; color:#aaa; font-size:12px;">VOLUMEN:</div>
+                <input type="range" id="musicVol" min="0" max="1" step="0.1" value="0.5" style="width:100%; margin-bottom:20px;">
+                
+                <div style="margin-bottom: 10px; color: #aaa; font-size: 12px;">SELECCIONA DÓNDE QUIERES QUE SUENE:</div>
+                <select id="musicTargetSelect" style="width: 100%; padding: 10px; background: #222; color: white; border: 1px solid #555; border-radius: 5px; margin-bottom: 20px;">
+                    <option value="menu">🏠 Menú Principal</option>
+                    <option value="loading">⌛ Pantalla de Carga</option>
+                    <optgroup label="Mis Niveles" id="musicOptGroupCustom"></optgroup>
+                </select>
+                <button class="action-btn" style="width: 100%; font-size: 18px; padding: 10px; background: #ff00cc;" onclick="confirmMusicAssignment()">CONFIRMAR ASIGNACIÓN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="levelCreatorMenu" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span>🛠️ CREADOR DE NIVELES</span><span class="close-btn" onclick="toggleModal('levelCreatorMenu')">×</span></div>
+            <div class="modal-body" style="padding: 20px; background: #000; overflow-y: auto;">
+                <button class="action-btn" style="background: #00ffcc; color: black; width: 100%; margin-bottom: 20px;" onclick="startNewLevel()">+ CREAR NUEVO NIVEL</button>
+                <div style="color: #00ff00; font-size: 12px; margin-bottom: 10px; background: #001100; padding: 10px; border-radius: 5px; border: 1px solid #00ff00;">
+                    ✅ Todos los niveles son editables.<br>
+                    📁 Se guardan en tu navegador.
+                </div>
+                <div style="border-top: 2px solid #333; padding-top: 15px;">
+                    <div style="color: #fff; font-weight: bold; margin-bottom: 15px;">LISTA DE NIVELES:</div>
+                    <div id="editLevelList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editorUI" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index: 30000;">
+        <div style="position:absolute; top:0; left:0; width:100%; height:60px; background:#222; display:flex; align-items:center; padding:0 20px; justify-content:space-between; border-bottom: 2px solid #555;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="color:white; font-weight:bold; font-size:18px;">EDITOR: <span id="editorLevelName">NUEVO</span></div>
+                <div style="display:flex; align-items:center; gap:5px; background: #333; padding: 5px 10px; border-radius: 5px;">
+                    <span style="color:#aaa; font-size:10px;">LARGO:</span>
+                    <input type="number" id="levelWidthInput" value="60" min="20" max="50000" style="width:70px; background:#111; border:1px solid #555; color:white; text-align:center;" onchange="updateLevelWidth()">
+                </div>
+                <div style="color: #888; font-size: 10px;">(Rueda ratón = Scroll)</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="toggleEditorRotation()" style="background:#ff9900; border:none; color:black; padding:10px 15px; font-weight:bold; cursor:pointer; border-radius:5px;">🔄 ROTAR <span id="rotDisplay">0°</span></button>
+
+                <button onclick="document.getElementById('editorMusicUpload').click()" style="background:#ff00cc; border:none; color:white; padding:10px 15px; font-weight:bold; cursor:pointer; border-radius:5px;">🎵 MÚSICA</button>
+                <input type="file" id="editorMusicUpload" hidden accept="audio/mp3,audio/wav" onchange="handleEditorMusicUpload(this)">
+
+                <button onclick="document.getElementById('editorImageUpload').click()" style="background:#00ffff; border:none; color:black; padding:10px 15px; font-weight:bold; cursor:pointer; border-radius:5px;">🖼️ IMAGEN</button>
+                <input type="file" id="editorImageUpload" hidden accept="image/*" onchange="handleEditorImageUpload(this)">
+                
+                <button onclick="saveLevelPrompt()" style="background:#00cc00; border:none; color:white; padding:10px 15px; font-weight:bold; cursor:pointer; border-radius:5px;">💾 GUARDAR</button>
+                <button onclick="exitEditor()" style="background:#cc0000; border:none; color:white; padding:10px 15px; font-weight:bold; cursor:pointer; border-radius:5px;">✖ SALIR</button>
+            </div>
+        </div>
+        
+        <div id="editorViewport" style="position:absolute; top:60px; left:0; width:100%; bottom:90px; overflow:hidden; background:#000; cursor:crosshair;">
+            <canvas id="editorCanvas"></canvas>
+        </div>
+        
+        <div style="position:absolute; bottom:0; left:0; width:100%; height:70px; background:#222; display:flex; align-items:center; padding:0 15px; border-top: 2px solid #555; gap: 8px; overflow-x: auto;">
+            <div class="tool-btn selected" onclick="selectTool('remove')" style="border-color: #ff4444; color: #ff4444;">BORRAR</div>
+            <div class="tool-btn" onclick="selectTool('#')" style="background: #666; color: white;">BLOQUE</div>
+            <div class="tool-btn" onclick="selectTool('-')" style="background: #666; color: #ccc;">LOSA</div>
+            <div class="tool-btn" onclick="selectTool('^')" style="background: #000; border-color: #f00; color: #f00;">PINCHO</div>
+            <div class="tool-btn" onclick="selectTool('O')" style="background: #ff0; color: black;">ORBE</div>
+            <div class="tool-btn" onclick="selectTool('_')" style="background: #ff0; color: black;">TRAMPOLÍN</div>
+            <div class="tool-btn" onclick="selectTool('G')" style="background: #0f3311; color: #39ff14; border-color: #39ff14;">GEMA</div>
+            <div class="tool-btn" onclick="selectTool('F')" style="background: #fff; color: black;">META</div>
+            <div class="tool-btn" onclick="selectTool('C')" style="background: #0f0; color: black;">CUBO</div>
+            <div class="tool-btn" onclick="selectTool('TEXT')" style="background: #5500aa; color: white; border-color: #aa00ff;">T TEXTO</div>
+            <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                <span style="color:white; font-weight:bold; font-size:12px;">COLOR:</span>
+                <input type="color" id="levelColorPicker" value="#00ff00" style="width:50px; height:40px; border:none; cursor:pointer;">
+            </div>
+        </div>
+    </div>
+
+    <div id="ui">
+        <div class="top-widgets">
+            <div id="cupWidget" class="widget" onclick="toggleModal('trophyRoadModal')"><span>🏆</span> <span id="dispCups">0</span></div>
+            <div id="gemWidget" class="widget"><span>💎</span> <span id="dispGems">0</span></div>
+            <div id="shopWidget" class="widget" onclick="toggleModal('shopModal')"><span>🛒</span> TIENDA</div>
+            <div id="missionWidget" class="widget" onclick="toggleModal('missionsModal')"><span>📜</span> MISIONES</div>
+            <div id="devWidget" class="widget" onclick="toggleModal('devModal')"><span>💻</span> DEV</div>
+            <div id="devSettingsWidget" class="widget" onclick="toggleModal('devSettingsModal')"><span>⚙️</span> AJUSTES</div>
+            <div id="devExitWidget" class="widget" onclick="exitDevMode()"><span>🚪</span> SALIR</div>
+        </div>
+
+        <div class="menu-btn-container">
+        </div>
+
+        <div id="mainMenu" class="menu-box">
+            <div class="main-menu-info">
+                <div class="welcome-user" id="welcomeUser">👋 Bienvenido, Jugador</div>
+                <div class="current-level-title">NIVEL ACTUAL</div>
+                <div id="currentLevelName" class="active-level-name">NORMAL</div>
+            </div>
+            <div class="main-menu-actions">
+                <button class="btn-competitive" onclick="toggleModal('competitiveModal')"><span>🏆</span>COMPETITIVO</button>
+                <button class="btn-play" onclick="startCurrentLevel()">JUEGA</button>
+                <button class="btn-levels" onclick="toggleModal('levelsModal')"><span>📊</span>LEVELS</button>
+            </div>
+        </div>
+
+        <div id="deathMenu" class="popup-box">
+            <h1 style="color: #ff3333; font-size: 60px; margin:0;">CRASHED</h1>
+            <h2 id="percentText" style="font-size: 80px; margin: 20px 0;">0%</h2>
+            <div class="gem-loot-display">Loot: +<span id="deathGems">0</span> 💎</div>
+            <div class="btn-container">
+                <button class="action-btn btn-retry" onclick="restartLevel()">REINTENTAR</button>
+                <button class="action-btn btn-exit" onclick="showMainMenu()">SALIR</button>
+            </div>
+        </div>
+        
+        <div id="winMenu" class="popup-box">
+            <h1 style="color: #44ff44;">¡NIVEL COMPLETADO!</h1>
+            <h3 style="color: #ffd700; font-size: 30px;">+<span id="cupReward">0</span> 🏆 | +<span id="gemReward">0</span> 💎</h3>
+            <div class="gem-loot-display">Loot Recogido: +<span id="winGems">0</span> 💎</div>
+            <div class="btn-container">
+                <button class="action-btn btn-retry" style="background: #0088ff; width: 100%; box-shadow: 0 0 20px #0088ff;" onclick="showMainMenu()">CONTINUAR</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+// ==================== CONFIGURACIÓN PRINCIPAL ====================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ==================== CLAVES DE ALMACENAMIENTO ====================
+const STORAGE_PREFIX = 'GD_ULTIMATE_V5_';
+const STORAGE_KEY_USER = STORAGE_PREFIX + 'userData'; 
+const STORAGE_KEY_LEVELS = STORAGE_PREFIX + 'customLevels';
+const STORAGE_KEY_DEV = STORAGE_PREFIX + 'devData';
+const STORAGE_KEY_RANKING = STORAGE_PREFIX + 'ranking_data';
+
+// ==================== DATOS DEL USUARIO ====================
+let currentUsername = "Jugador";
+
+let userData = { 
+    totalCups: 0, 
+    gems: 50, 
+    levels: {}, 
+    unlockedSkins: [0], 
+    currentSkin: 0, 
+    unlockedTrails: [0], 
+    currentTrail: 0,
+    // Dual Skills & Keys
+    unlockedSkills: [], 
+    equippedSkills: [null, null], // [Slot1_ID, Slot2_ID]
+    skillKeys: ['KeyQ', 'KeyE'], // Default keys
+    // ---
+    claimedTrophies: [],
+    missionData: { lastReset: 0, lastDailyLogin: "", played: 0, won: 0, claimed: [false, false, false] },
+    bannedNames: []
+};
+
+// ==================== GLOBAL VARS ====================
+let backupUserData = null; 
+let isDevMode = false;
+let devSettings = { godMode: false, infGems: false };
+let currentActiveLevelIdx = 0;
+let currentShopTab = 'skins';
+let currentEditingSkillSlot = 0; // 0 or 1
+let waitingForKey = -1; // -1 none, 0 slot1, 1 slot2
+
+// ==================== NIVELES ====================
+const INITIAL_BASE_LEVELS = [
+    { 
+        name: "FÁCIL", diff: "Easy", colorHex: "#00ff00", cups: 0, diamonds: 100, 
+        map: [
+            "                                                                                                                                              ",
+            "                                                                                                                                              ",
+            "                                                                                                                    ###                       ",
+            "                                                                      ###                                           ###                       ",
+            "                                           O                          ###                    O                      ###                     F ",
+            "                    ^       ###          #####           ^            ###                  #####           ^        ###                     # ",
+            "                  #####     ###          #####         #####          ###                  #####         #####      ###                     # ",
+            "#############################################################################################################################################"
+        ] 
+    },
+    { 
+        name: "NORMAL", diff: "Normal", colorHex: "#ffff00", cups: 1000, diamonds: 250, 
+        map: [
+            "                                                                                                                                                                                                               ",
+            "                                                                                                                                                                                                               ",
+            "                                            S                                                                                 C                                                                                ",
+            "                                            #                                 ^                   ^                           #                                                                                ",
+            "                   O                        #                                ###                 ###                          #                       O                   O                  O               F ",
+            "        ^        #####          ^           #                                ###                 ###                          #                     #####               #####              #####             # ",
+            "       ###       #####         ###          #                                ###                 ###                          #                     #####               #####              #####             # ",
+            "##############################################################################################################################################################################################################"
+        ] 
+    }
+];
+
+let allLevels = [];
+function getAllLevels() { return allLevels; }
+
+// ==================== SKINS & TRAILS (REBAJADOS) ====================
+const ADJECTIVES = ["Neon", "Cyber", "Dark", "Hyper", "Mega", "Ultra", "Cosmic", "Void", "Shadow", "Light", "Solar", "Lunar", "Toxic", "Rusty", "Golden", "Frozen"];
+const NOUNS = ["Cube", "Block", "Pulse", "Dash", "Star", "Glitch", "Flux", "Core", "Nexus", "Spark", "Shard", "Vortex", "Matrix", "Byte", "Spirit", "Soul"];
+
+function generateName() { return ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)] + " " + NOUNS[Math.floor(Math.random() * NOUNS.length)]; }
+
+const SKINS = [
+    { id: 0, name: "Clásico", color: "#00FFFF", type: "solid", cost: 0 },
+    { id: 1, name: "Fuego", color: "#FF4400", type: "border", cost: 5 },
+    { id: 2, name: "Tóxico", color: "#00ff00", type: "solid", cost: 8 },
+    { id: 3, name: "Amatista", color: "#9900ff", type: "solid", cost: 10 },
+    { id: 4, name: "Solar", color: "#ffcc00", type: "solid", cost: 12 },
+    { id: 5, name: "Oscuro", color: "#333333", type: "solid", cost: 15 },
+    { id: 6, name: "Arcoiris", color: "rainbow", type: "solid", cost: 30 },
+];
+// Skins generadas más baratas (5 a 20 gemas aprox)
+for(let i=7; i<=65; i++) { SKINS.push({ id: i, name: generateName(), color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`, type: "solid", cost: Math.ceil(i * 0.5) + 5 }); }
+
+const TRAILS = [
+    { id: 0, name: "Básico", type: "fade", color: "match", cost: 0 },
+    { id: 1, name: "Polvo de Oro", type: "sparkle", color: "#FFD700", cost: 5 },
+    { id: 2, name: "Llamarada", type: "sparkle", color: "#ff4400", cost: 8 },
+    { id: 3, name: "Cero Absoluto", type: "sparkle", color: "#00ffff", cost: 10 },
+    { id: 4, name: "Biohazard", type: "sparkle", color: "#00ff00", cost: 12 },
+    { id: 5, name: "Brujería", type: "sparkle", color: "#ff00ff", cost: 15 },
+    { id: 6, name: "Vacio", type: "sparkle", color: "#333333", cost: 18 },
+];
+// Trails generados más baratos
+for(let i=7; i<=33; i++) { TRAILS.push({ id: i, name: "Estela " + generateName(), type: "sparkle", color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`, cost: Math.ceil(i * 0.8) + 5 }); }
+
+// ==================== HABILIDADES (COSTO 10 GEMAS) ====================
+const SKILLS = [
+    { id: 0, name: "Inmunidad", desc: "Invencible por 4s", cost: 10, icon: "🛡️", cooldown: 15000, duration: 4000, style: "linear-gradient(135deg, #00ffcc, #0088aa)" },
+    { id: 1, name: "Salto Cohete", desc: "Salto vertical explosivo", cost: 10, icon: "🚀", cooldown: 8000, duration: 200, style: "linear-gradient(135deg, #ff4400, #ff0000)" }, 
+    { id: 2, name: "Imán", desc: "Atrae gemas cercanas", cost: 10, icon: "🧲", cooldown: 8000, duration: 6000, style: "linear-gradient(135deg, #ff9900, #ff4400)" },
+    { id: 3, name: "Diminuto", desc: "Pequeño por 5s", cost: 10, icon: "🤏", cooldown: 10000, duration: 5000, style: "linear-gradient(135deg, #aa00ff, #5500aa)" },
+    { id: 4, name: "Excavadora", desc: "Destruye bloques", cost: 10, icon: "🚧, cooldown: 18000, duration: 4000, style: "linear-gradient(135deg, #ff0000, #aa0000)" },
+    { id: 5, name: "Gravedad Lunar", desc: "Salto alto, caída lenta", cost: 10, icon: "🌑", cooldown: 12000, duration: 6000, style: "linear-gradient(135deg, #555555, #222222)" },
+    { id: 6, name: "Flash", desc: "Velocidad Extrema", cost: 10, icon: "⚡", cooldown: 15000, duration: 3000, style: "linear-gradient(135deg, #ffff00, #ff8800)" },
+    { id: 7, name: "Volador", desc: "Modo Nave 5s", cost: 10, icon: "✈️", cooldown: 20000, duration: 5000, style: "linear-gradient(135deg, #ff00ff, #aa00aa)" },
+    { id: 8, name: "Doble Salto", desc: "Salta en el aire", cost: 10, icon: "🦘", cooldown: 8000, duration: 5000, style: "linear-gradient(135deg, #00ff00, #004400)" },
+    { id: 9, name: "Dash Aéreo", desc: "Impulso frontal", cost: 10, icon: "💨", cooldown: 5000, duration: 200, style: "linear-gradient(135deg, #00ffff, #0088ff)" },
+    { id: 10, name: "Congelar", desc: "Pausa tu caída 1s", cost: 10, icon: "❄️", cooldown: 10000, duration: 1000, style: "linear-gradient(135deg, #aaddff, #ffffff)" },
+    { id: 11, name: "Fantasma", desc: "Atraviesa Pinchos", cost: 10, icon: "👻", cooldown: 15000, duration: 3000, style: "linear-gradient(135deg, #aaaaaa, #ffffff)" },
+    { id: 12, name: "Anti-Gravedad", desc: "Invierte gravedad", cost: 10, icon: "🙃", cooldown: 8000, duration: 4000, style: "linear-gradient(135deg, #ff00aa, #440022)" },
+    { id: 13, name: "Teleport Up", desc: "Sube 3 bloques", cost: 10, icon: "⬆️", cooldown: 10000, duration: 100, style: "linear-gradient(135deg, #44ff44, #00aa00)" },
+    { id: 14, name: "Teleport Down", desc: "Baja de golpe", cost: 10, icon: "⬇️", cooldown: 5000, duration: 100, style: "linear-gradient(135deg, #880000, #ff4444)" },
+    { id: 15, name: "Ancla", desc: "Caída ultra rápida", cost: 10, icon: "⚓", cooldown: 6000, duration: 2000, style: "linear-gradient(135deg, #000044, #000088)" },
+    { id: 16, name: "Constructor", desc: "Crea plataforma abajo", cost: 10, icon: "🧱", cooldown: 12000, duration: 100, style: "linear-gradient(135deg, #cc8800, #ffaa00)" },
+    { id: 17, name: "Mega Cubo", desc: "Cubo Gigante", cost: 10, icon: "🟦", cooldown: 15000, duration: 5000, style: "linear-gradient(135deg, #0000ff, #5555ff)" },
+    { id: 18, name: "Minero", desc: "Destruye suelo debajo", cost: 10, icon: "⛏️", cooldown: 10000, duration: 100, style: "linear-gradient(135deg, #555, #222)" },
+    { id: 19, name: "Clon Sombra", desc: "Estela dañina detrás", cost: 10, icon: "👥", cooldown: 14000, duration: 6000, style: "linear-gradient(135deg, #330033, #660066)" },
+    { id: 20, name: "Ninja Dash", desc: "TP adelante 5 bloques", cost: 10, icon: "🥷", cooldown: 8000, duration: 100, style: "linear-gradient(135deg, #000, #333)" },
+    { id: 21, name: "Frenesí", desc: "Velocidad y Destrucción", cost: 10, icon: "💢", cooldown: 20000, duration: 3000, style: "linear-gradient(135deg, #ff0000, #ffff00)" },
+    { id: 22, name: "Levitación", desc: "Flota en el aire", cost: 10, icon: "🧘", cooldown: 12000, duration: 2000, style: "linear-gradient(135deg, #ccffff, #ffffff)" },
+    { id: 23, name: "Rebote", desc: "Rebotas en obstáculos", cost: 10, icon: "🏀", cooldown: 15000, duration: 4000, style: "linear-gradient(135deg, #ff8800, #ffff88)" },
+    { id: 24, name: "Monedero", desc: "Gemas valen doble", cost: 10, icon: "💰", cooldown: 25000, duration: 10000, style: "linear-gradient(135deg, #008800, #00ff00)" },
+    // NUEVAS HABILIDADES AÑADIDAS
+    { id: 25, name: "Chronos", desc: "Cámara Lenta 5s", cost: 10, icon: "⏳", cooldown: 20000, duration: 5000, style: "linear-gradient(135deg, #000044, #440088)" },
+    { id: 26, name: "Midas", desc: "Gemas valen x5", cost: 10, icon: "🧈", cooldown: 30000, duration: 8000, style: "linear-gradient(135deg, #FFD700, #FFAA00)" },
+    { id: 27, name: "Salto Titán", desc: "Salto monstruoso", cost: 10, icon: "🦖", cooldown: 10000, duration: 200, style: "linear-gradient(135deg, #222, #0f0)" },
+    { id: 28, name: "Phase Shift", desc: "Atraviesas paredes", cost: 10, icon: "🌫️", cooldown: 15000, duration: 2000, style: "linear-gradient(135deg, #888, #ddd)" }
+];
+
+const MISSIONS = [
+    { id: 0, desc: "Gana 1 Partida", reward: 100, target: 1, type: "win" },
+    { id: 1, desc: "Entra Todos los días", reward: 500, target: 1, type: "daily" },
+    { id: 2, desc: "Juega 3 Partidas", reward: 200, target: 3, type: "play" }
+];
+
+// ==================== SISTEMA DE GUARDADO ====================
+function updateStorageInfo() {
+    const info = document.getElementById('storageInfo');
+    if (info) {
+        const levelCount = allLevels.length;
+        info.innerHTML = `💾 ${levelCount} niveles`;
+    }
+}
+
+function showSaveIndicator() {
+    const ind = document.getElementById('saveIndicator');
+    if (ind) {
+        ind.style.display = 'block';
+        setTimeout(() => { ind.style.display = 'none'; }, 2000);
+    }
+}
+
+function saveUserData() {
+    try {
+        const dataString = JSON.stringify(userData);
+        if (isDevMode) {
+            localStorage.setItem(STORAGE_KEY_DEV, dataString);
+        } else {
+            localStorage.setItem(STORAGE_KEY_USER, dataString);
+        }
+        // Shared Ranking logic
+        let ranking = JSON.parse(localStorage.getItem(STORAGE_KEY_RANKING) || '{"Leo": 0, "Hugo": 0}');
+        let key = null;
+        if(currentUsername.includes("Leo")) key = "Leo";
+        else if(currentUsername.includes("Hugo")) key = "Hugo";
+        else if(currentUsername.includes("Pedro")) key = "Pedro";
+        if(key) {
+            ranking[key] = userData.totalCups;
+            localStorage.setItem(STORAGE_KEY_RANKING, JSON.stringify(ranking));
+        }
+    } catch(e) { console.error('Error guardando datos:', e); }
+}
+
+function loadUserData() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY_USER);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            userData = { ...userData, ...parsed };
+            // Ensure compatibility
+            if(!userData.equippedSkills) userData.equippedSkills = [null, null];
+            if(!userData.unlockedSkills) userData.unlockedSkills = [];
+            if(!userData.skillKeys) userData.skillKeys = ['KeyQ', 'KeyE'];
+        }
+    } catch(e) { console.error('Error cargando datos:', e); }
+}
+
+function saveLevels() {
+    try {
+        const dataString = JSON.stringify(allLevels);
+        localStorage.setItem(STORAGE_KEY_LEVELS, dataString);
+        showSaveIndicator();
+        updateStorageInfo();
+        return true;
+    } catch(e) { console.error('Error guardando niveles:', e); return false; }
+}
+
+function loadLevels() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY_LEVELS);
+        if (saved && saved !== 'null' && saved !== '[]') {
+            allLevels = JSON.parse(saved);
+        } else {
+            allLevels = JSON.parse(JSON.stringify(INITIAL_BASE_LEVELS));
+        }
+        updateStorageInfo();
+    } catch(e) {
+        console.error('Error cargando niveles:', e);
+        allLevels = JSON.parse(JSON.stringify(INITIAL_BASE_LEVELS));
+    }
+}
+
+function updateUI() { 
+    document.getElementById('dispCups').innerText = userData.totalCups; 
+    document.getElementById('dispGems').innerText = devSettings.infGems ? "∞" : userData.gems;
+    document.getElementById('welcomeUser').innerText = `👋 Bienvenido, ${currentUsername}`;
+    
+    // Update Key Bind Buttons Text
+    const k1 = userData.skillKeys[0].replace('Key', '');
+    const k2 = userData.skillKeys[1].replace('Key', '');
+    document.getElementById('keyBindBtn1').innerText = `Tecla: ${k1}`;
+    document.getElementById('keyBindBtn2').innerText = `Tecla: ${k2}`;
+    
+    determineActiveLevel();
+}
+
+function determineActiveLevel() {
+    let idx = 0;
+    for(let i = 0; i < allLevels.length; i++) {
+        if(userData.totalCups >= allLevels[i].cups) {
+            idx = i;
+        }
+    }
+    currentActiveLevelIdx = idx;
+
+    if(allLevels[currentActiveLevelIdx]) {
+        document.getElementById('currentLevelName').innerText = allLevels[currentActiveLevelIdx].name;
+        document.getElementById('currentLevelName').style.color = allLevels[currentActiveLevelIdx].colorHex;
+        document.querySelector('.btn-play').style.borderColor = allLevels[currentActiveLevelIdx].colorHex;
+    }
+}
+
+// ==================== RANKING ====================
+function generateRanking() {
+    const list = document.getElementById('rankingList');
+    list.innerHTML = "";
+    
+    let rankingData = JSON.parse(localStorage.getItem(STORAGE_KEY_RANKING) || '{"Leo": 0, "Hugo": 0, "Pedro": 0}');
+    let allPlayers = [
+        { name: "Developer (Leo)", shortName: "Leo", trophies: rankingData["Leo"] || 0 },
+        { name: "Developer (Hugo)", shortName: "Hugo", trophies: rankingData["Hugo"] || 0 },
+        { name: "Developer (Pedro)", shortName: "Pedro", trophies: rankingData["Pedro"] || 0 }
+    ];
+
+    allPlayers.forEach(p => { if(currentUsername.includes(p.shortName)) p.isCurrentUser = true; });
+    allPlayers.sort((a, b) => b.trophies - a.trophies);
+    
+    allPlayers.forEach((player, idx) => {
+        const position = idx + 1;
+        const item = document.createElement('div');
+        let positionClass = '';
+        if(position === 1) positionClass = 'top-1';
+        else if(position === 2) positionClass = 'top-2';
+        if(player.isCurrentUser) positionClass += ' current-user';
+        item.className = `ranking-item ${positionClass}`;
+        
+        let medal = position === 1 ? '🥇' : '🥈';
+        item.innerHTML = `
+            <div class="ranking-position">${medal}</div>
+            <div class="ranking-info">
+                <div class="ranking-name">${player.name} ${player.isCurrentUser ? '(TÚ)' : ''}</div>
+                <div style="font-size: 12px; color: ${player.isCurrentUser ? '#00ffcc' : '#888'};">DEVELOPER TEAM</div>
+            </div>
+            <div class="ranking-trophies"><span>🏆</span><span>${player.trophies.toLocaleString()}</span></div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+// ==================== KEY BINDING ====================
+function startKeyBinding(slot) {
+    waitingForKey = slot;
+    document.getElementById(`keyBindBtn${slot+1}`).innerText = "PRESIONA...";
+    document.getElementById(`keyBindBtn${slot+1}`).classList.add('waiting');
+}
+
+window.addEventListener('keydown', e => {
+    if(waitingForKey !== -1) {
+        e.preventDefault();
+        const code = e.code;
+        userData.skillKeys[waitingForKey] = code;
+        saveUserData();
+        
+        document.getElementById(`keyBindBtn${waitingForKey+1}`).innerText = `Tecla: ${code.replace('Key', '')}`;
+        document.getElementById(`keyBindBtn${waitingForKey+1}`).classList.remove('waiting');
+        
+        waitingForKey = -1;
+        return;
+    }
+    
+    if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter') jump(); 
+    
+    // Custom Skill Keys
+    if(e.code === userData.skillKeys[0]) activateSkill(0);
+    if(e.code === userData.skillKeys[1]) activateSkill(1);
+});
+
+// ==================== MISIONES ====================
+function checkMissionReset() {
+    const now = Date.now();
+    if (now - userData.missionData.lastReset > 86400000) {
+        userData.missionData.played = 0; userData.missionData.won = 0;
+        userData.missionData.claimed = [false, false, false];
+        userData.missionData.lastReset = now;
+        saveUserData();
+    }
+}
+
+function updateMissionProgress(type) {
+    checkMissionReset();
+    let changed = false;
+    if (type === 'play' && userData.missionData.played < 3) { userData.missionData.played++; changed = true; }
+    else if (type === 'win' && userData.missionData.won < 1) { userData.missionData.won++; changed = true; }
+    if(changed) saveUserData();
+}
+
+function renderMissions() {
+    checkMissionReset();
+    const list = document.getElementById('missionList'); 
+    list.innerHTML = "";
+    const today = new Date().toDateString();
+
+    MISSIONS.forEach((m, idx) => {
+        let buttonHtml = '';
+        if (m.type === 'daily') {
+             if (userData.missionData.lastDailyLogin === today) {
+                 buttonHtml = `<button class="btn-claimed">HOY YA ENTRASTE</button>`;
+             } else {
+                 buttonHtml = `<button class="btn-claim" onclick="claimMission(${idx})">RECLAMAR</button>`;
+             }
+        } else {
+            let progress = 0;
+            if (m.type === 'play') progress = userData.missionData.played;
+            if (m.type === 'win') progress = userData.missionData.won;
+            let isCompleted = progress >= m.target;
+            let isClaimed = userData.missionData.claimed[idx];
+
+            if (isClaimed) buttonHtml = `<button class="btn-claimed">RECLAMADO</button>`;
+            else if (isCompleted) buttonHtml = `<button class="btn-claim" onclick="claimMission(${idx})">RECLAMAR</button>`;
+            else buttonHtml = `<span style="color:#666; font-weight:bold;">EN PROGRESO</span>`;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'mission-card';
+        div.innerHTML = `
+            <div class="mission-info">
+                <div style="font-weight:bold;">${m.desc}</div>
+                <div style="color:#39ff14;">Recompensa: ${m.reward} 💎</div>
+            </div>
+            <div>${buttonHtml}</div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function claimMission(idx) {
+    const today = new Date().toDateString();
+    if (MISSIONS[idx].type === 'daily') {
+        if (userData.missionData.lastDailyLogin === today) return;
+        userData.missionData.lastDailyLogin = today;
+        userData.gems += MISSIONS[idx].reward;
+        saveUserData(); updateUI(); renderMissions();
+        alert("¡Has recibido gemas por entrar hoy!");
+        return;
+    }
+    if (userData.missionData.claimed[idx]) return;
+    userData.gems += MISSIONS[idx].reward;
+    userData.missionData.claimed[idx] = true;
+    saveUserData(); updateUI(); renderMissions();
+}
+
+// ==================== FUNCIONES PRINCIPALES (AUTH UPDATE) ====================
+function checkPassword() {
+    const username = document.getElementById('userInput').value.trim();
+    const password = document.getElementById('passInput').value;
+    
+    if(!username) { 
+        document.getElementById('errorMsg').innerText = "❌ INTRODUCE UN NOMBRE"; 
+        document.getElementById('errorMsg').style.display = 'block'; 
+        return; 
+    }
+    
+    isDevMode = false;
+    let accessGranted = false;
+
+    // Verificar Cuentas Developer
+    if (username === "Leo" && password === "4102") {
+        accessGranted = true; isDevMode = true;
+    } else if (username === "Hugo" && password === "0227") {
+        accessGranted = true; isDevMode = true;
+    } else if (username === "Pedro" && password === "1620") {
+        accessGranted = true; isDevMode = true;
+    } 
+    // Verificar Jugador Normal
+    else if (password === "5042") {
+        accessGranted = true;
+    }
+
+    if (accessGranted) {
+        currentUsername = username;
+        document.getElementById('loginScreen').style.display = 'none';
+        
+        // Si entra con dev mode desde el login, activar botones
+        if (isDevMode) {
+            document.getElementById('devSettingsWidget').style.display = 'flex';
+            document.getElementById('devExitWidget').style.display = 'flex';
+        }
+
+        startLoading();
+    } else {
+        document.getElementById('errorMsg').innerText = "❌ CÓDIGO INCORRECTO";
+        document.getElementById('errorMsg').style.display = 'block';
+    }
+}
+
+function startLoading() {
+    const load = document.getElementById('loadingScreen'); 
+    load.style.display = 'flex';
+    let p = 0;
+    const int = setInterval(() => {
+        p++; 
+        document.getElementById('loadFill').style.width = p + "%"; 
+        document.getElementById('loadText').innerText = "CARGANDO " + p + "%";
+        if(p >= 100) {
+            clearInterval(int); 
+            load.style.opacity = 0;
+            setTimeout(() => {
+                load.style.display = 'none'; 
+                document.getElementById('ui').style.display = 'block'; 
+                document.getElementById('mainMenu').style.display = 'flex';
+                initGame(); 
+            }, 500);
+        }
+    }, 30);
+}
+
+// ==================== LÓGICA DE TIENDA ====================
+function switchShopTab(tab) {
+    currentShopTab = tab;
+    document.getElementById('tabSkins').className = tab === 'skins' ? 'shop-tab active' : 'shop-tab';
+    document.getElementById('tabTrails').className = tab === 'trails' ? 'shop-tab active' : 'shop-tab';
+    document.getElementById('tabSkills').className = tab === 'skills' ? 'shop-tab active' : 'shop-tab';
+    
+    if(tab === 'skills') document.getElementById('skillSlotSelector').style.display = 'flex';
+    else document.getElementById('skillSlotSelector').style.display = 'none';
+
+    renderShop(tab);
+}
+
+function selectSkillSlot(slot) {
+    currentEditingSkillSlot = slot;
+    document.getElementById('selectSlot1').className = slot === 0 ? 'slot-btn active-slot' : 'slot-btn';
+    document.getElementById('selectSlot2').className = slot === 1 ? 'slot-btn active-slot' : 'slot-btn';
+    renderShop('skills');
+}
+
+function renderShop(tab) {
+    const grid = document.getElementById('shopGrid');
+    if(!grid) return;
+    grid.innerHTML = "";
+    
+    let items, owned, current;
+    if(tab === 'skins') { items = SKINS; owned = userData.unlockedSkins; current = userData.currentSkin; }
+    else if(tab === 'trails') { items = TRAILS; owned = userData.unlockedTrails; current = userData.currentTrail; }
+    else if(tab === 'skills') { items = SKILLS; owned = userData.unlockedSkills; current = null; } 
+
+    items.forEach(item => {
+        const isOwned = owned.includes(item.id);
+        let isEquipped = false;
+        let equipLabel = "";
+
+        if(tab === 'skins' || tab === 'trails') {
+            isEquipped = (current === item.id);
+            if(isEquipped) equipLabel = '<div class="skin-owned" style="color:#cc00ff;">EQUIPADO</div>';
+        } else {
+            if(userData.equippedSkills[0] === item.id) { isEquipped = true; equipLabel = '<div class="skin-owned" style="color:#cc00ff;">EQUIPADO SLOT 1</div>'; }
+            else if(userData.equippedSkills[1] === item.id) { isEquipped = true; equipLabel = '<div class="skin-owned" style="color:#ffaa00;">EQUIPADO SLOT 2</div>'; }
+        }
+        
+        const card = document.createElement('div');
+        card.className = `skin-card ${isEquipped ? 'skin-equipped' : ''}`;
+        card.onclick = () => buyOrEquip(tab, item.id, item.cost);
+        
+        let preview = "";
+        if(tab === 'skins') {
+            const color = item.color === 'rainbow' ? 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)' : item.color;
+            preview = `<div class="skin-preview" style="background:${color}; box-shadow:0 0 15px ${item.color !== 'rainbow' ? item.color : 'white'}; border: 2px solid white;"></div>`;
+        } else if (tab === 'trails') {
+             const color = item.color === 'match' ? '#ffffff' : (item.color === 'rainbow' ? 'linear-gradient(90deg, #ff0000, #00ff00, #0000ff)' : item.color);
+             preview = `<div class="skin-preview" style="background:#000; display:flex; align-items:center; justify-content:center; color:${color}">✨</div>`;
+        } else if (tab === 'skills') {
+             preview = `<div class="skin-preview" style="background:${item.style}; font-size:24px;">${item.icon}</div>`;
+        }
+
+        card.innerHTML = `
+            ${preview}
+            <div style="font-weight:bold; font-size:13px; color:white; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+            ${tab === 'skills' ? `<div style="font-size:10px; color:#aaa; margin-bottom:5px;">${item.desc}</div>` : ''}
+            ${isEquipped ? equipLabel : (isOwned ? '<div class="skin-owned">TIENES</div>' : `<div class="skin-price">${item.cost.toLocaleString()} 💎</div>`)}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function buyOrEquip(tab, id, cost) {
+    let owned;
+    if(tab === 'skins') owned = userData.unlockedSkins;
+    else if(tab === 'trails') owned = userData.unlockedTrails;
+    else owned = userData.unlockedSkills;
+    
+    if (owned.includes(id)) {
+        if(tab === 'skins') userData.currentSkin = id;
+        else if(tab === 'trails') userData.currentTrail = id;
+        else {
+            userData.equippedSkills[currentEditingSkillSlot] = id;
+        }
+        saveUserData();
+        renderShop(tab);
+    } else {
+        if (userData.gems >= cost) {
+            userData.gems -= cost;
+            if(tab === 'skins') userData.unlockedSkins.push(id);
+            else if(tab === 'trails') userData.unlockedTrails.push(id);
+            else userData.unlockedSkills.push(id);
+            saveUserData();
+            updateUI();
+            renderShop(tab);
+        } else {
+            alert("No tienes suficientes gemas 💎");
+        }
+    }
+}
+
+function toggleModal(id) {
+    const modal = document.getElementById(id);
+    if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        waitingForKey = -1; // Stop listening
+        document.querySelectorAll('.key-bind-btn').forEach(b => { b.classList.remove('waiting'); updateUI(); });
+    } else { 
+        if(id === 'trophyRoadModal') generateTrophyRoad(); 
+        if(id === 'shopModal') renderShop(currentShopTab);
+        if(id === 'missionsModal') renderMissions();
+        if(id === 'levelsModal') generateLevelsGrid();
+        if(id === 'levelCreatorMenu') renderLevelCreatorList();
+        if(id === 'competitiveModal') generateRanking();
+        modal.style.display = 'flex'; 
+    }
+}
+
+function generateTrophyRoad() {
+    const list = document.getElementById('trophyList'); 
+    list.innerHTML = "";
+    const maxTrophies = Math.max(...allLevels.map(l => l.cups)) + 2000;
+    
+    for (let i = 0; i <= maxTrophies; i += 500) {
+        const item = document.createElement('div');
+        const unlocked = userData.totalCups >= i;
+        const claimed = userData.claimedTrophies.includes(i);
+        item.className = `trophy-item ${unlocked ? 'unlocked' : ''}`;
+        
+        let rewardAmount = 100 + (i/500)*50; 
+        const levelUnlock = allLevels.find(l => l.cups === i);
+        let actionBtn = "";
+        if(unlocked && !claimed) actionBtn = `<button class="btn-claim" onclick="claimTrophyReward(${rewardAmount}, ${i})">RECLAMAR</button>`;
+        else if (claimed) actionBtn = `<span style="color:#00ff00; font-weight:bold;">✓</span>`;
+        else actionBtn = `🔒`;
+
+        let levelInfo = "";
+        if(levelUnlock) levelInfo = `<div style="font-size:11px; color:${levelUnlock.colorHex}; font-weight:bold; margin-top:3px;">🎮 Desbloquea: ${levelUnlock.name}</div>`;
+
+        item.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:24px;">${levelUnlock ? '🎮' : '💎'}</span>
+                <div>
+                    <div style="color: ${unlocked ? '#fff' : '#888'}">${levelUnlock ? 'NIVEL + Recompensa' : 'Recompensa'}</div>
+                    <div style="font-size:14px; color:#39ff14;">+${rewardAmount} Gemas</div>
+                    ${levelInfo}
+                </div>
+            </div>
+            <div style="text-align:right; display:flex; align-items:center; gap:15px;">
+                <div style="font-size:18px; font-weight:bold; color:${unlocked?'#ffd700':'#666'}">${i} 🏆</div>
+                <div>${actionBtn}</div>
+            </div>
+        `;
+        list.appendChild(item);
+    }
+}
+
+function claimTrophyReward(amount, index) {
+    if(userData.claimedTrophies.includes(index)) return;
+    userData.gems += amount;
+    userData.claimedTrophies.push(index);
+    saveUserData(); updateUI(); generateTrophyRoad();
+}
+
+// ==================== INICIALIZACIÓN DEL JUEGO ====================
+function initGame() {
+    loadUserData(); loadLevels(); checkMissionReset();
+    determineActiveLevel(); updateUI();
+    requestAnimationFrame(loop);
+}
+
+function startCurrentLevel() { startGame(currentActiveLevelIdx); }
+
+function generateLevelsGrid() {
+    const list = document.getElementById('levelsGrid'); list.innerHTML = "";
+    allLevels.forEach((info, idx) => {
+        const best = (userData.levels[idx] && userData.levels[idx].best) || 0;
+        let isLocked = true;
+        if (isDevMode) isLocked = false;
+        else if (idx <= currentActiveLevelIdx) isLocked = false;
+
+        const btn = document.createElement('div');
+        btn.className = `level-card ${!isLocked ? 'active-level' : ''}`;
+        btn.style.borderColor = info.colorHex;
+        if (!isLocked) btn.onclick = () => { toggleModal('levelsModal'); startGame(idx); };
+
+        btn.innerHTML = `
+            <div style="color:${info.colorHex}; font-weight:bold; font-size:18px;">${info.name}</div>
+            <div style="color:#888; font-size:12px;">${info.diff}</div>
+            <div style="font-size:12px; margin:5px 0;">Req: ${info.cups} 🏆</div>
+            <div style="text-align:right; font-weight:bold;">${best}%</div>
+            <div class="mini-progress-bg"><div class="mini-progress-fill" style="width: ${best}%; background-color: ${info.colorHex}"></div></div>
+            ${isLocked ? '<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; font-size:40px;">🔒</div>' : ''}
+        `;
+        list.appendChild(btn);
+    });
+}
+
+// ==================== AUDIO SYSTEM ====================
+let audioMap = { 'menu': null, 'loading': null };
+let pendingAudioBlob = null;
+let currentSource = null;
+
+function playMusic(id) {
+    if(currentSource) { currentSource.pause(); currentSource = null; }
+    let blobUrl = audioMap[id];
+    let volume = 0.5;
+    if(id.startsWith('level_')) {
+        const idx = parseInt(id.split('_')[1]);
+        if(allLevels[idx] && allLevels[idx].musicBlob) {
+            blobUrl = allLevels[idx].musicBlob;
+            if(allLevels[idx].musicVolume !== undefined) volume = allLevels[idx].musicVolume;
+        }
+    }
+    if (!blobUrl) return;
+    const audio = new Audio(blobUrl);
+    audio.loop = true; audio.volume = volume;
+    audio.play().catch(e => console.log("Audio play failed:", e));
+    currentSource = audio;
+}
+
+function handleGlobalMusicUpload(input) {
+    const file = input.files[0]; if(!file) return;
+    pendingAudioBlob = URL.createObjectURL(file);
+    document.getElementById('musicFileName').innerText = file.name;
+    const customOpt = document.getElementById('musicOptGroupCustom'); customOpt.innerHTML = "";
+    allLevels.forEach((l, i) => { const opt = document.createElement('option'); opt.value = `level_${i}`; opt.innerText = `Nivel: ${l.name}`; customOpt.appendChild(opt); });
+    toggleModal('devSettingsModal'); toggleModal('musicAssignModal');
+}
+
+function confirmMusicAssignment() {
+    const target = document.getElementById('musicTargetSelect').value;
+    const volume = parseFloat(document.getElementById('musicVol').value);
+    if(!pendingAudioBlob) return;
+    if(target.startsWith('level_')) {
+        const idx = parseInt(target.split('_')[1]);
+        if(allLevels[idx]) { allLevels[idx].musicBlob = pendingAudioBlob; allLevels[idx].musicVolume = volume; alert(`✅ Música asignada a: ${allLevels[idx].name}`); }
+    } else {
+        audioMap[target] = pendingAudioBlob; alert(`✅ Música asignada a ${target}`);
+        if(target === 'menu' && gameState === 'MENU') playMusic('menu');
+    }
+    toggleModal('musicAssignModal');
+}
+
+function handleEditorMusicUpload(input) {
+    const file = input.files[0]; if(!file) return;
+    editorMusicBlob = URL.createObjectURL(file); alert(`🎵 Música "${file.name}" asignada temporalmente.`);
+}
+
+// ==================== MOTOR DEL JUEGO ====================
+const TILE = 65; const GRAVITY = 0.9; const JUMP_FORCE = -16; 
+let SPEED = 11; const SHIP_LIFT = -0.7; const SHIP_GRAVITY = 0.35;
+
+let gameState = 'MENU';
+let currentLevelIdx = 0;
+let cameraX = 0; let shake = 0; let map = []; let mapImages = []; let mapTexts = [];
+let mapWidthPixels = 0; let floorLevel = 0; let winXPosition = 0; let bgOffset = 0; 
+let gravityInverted = false; let levelGemsCollected = 0;
+
+let activeSkills = [
+    { active: false, timer: 0, cooldownTimer: 0, effect: null },
+    { active: false, timer: 0, cooldownTimer: 0, effect: null }
+];
+let canDoubleJump = false;
+let isAntiGravity = false;
+let doubleGemValue = false;
+let bounceMode = false;
+
+const player = { x: 0, y: 0, w: 40, h: 40, dy: 0, mode: 'CUBE', rotation: 0, onGround: false, dead: false, trail: [] };
+let particles = [];
+let input = false; let inputPressed = false;
+
+function jump() {
+    input = true;
+    if (!inputPressed) {
+        inputPressed = true;
+        if (gameState === 'PLAYING' && player.mode === 'CUBE') {
+            let didJump = false;
+            if(player.onGround || bounceMode) {
+                let force = JUMP_FORCE;
+                if(hasSkillEffect(5)) force *= 1.4; // Lunar
+                if(hasSkillEffect(27)) force *= 1.6; // Salto Titan
+                player.dy = (gravityInverted || isAntiGravity) ? -force : force;
+                player.onGround = false;
+                didJump = true;
+            } else if (canDoubleJump) {
+                let force = JUMP_FORCE;
+                player.dy = (gravityInverted || isAntiGravity) ? -force : force;
+                createExplosion(player.x, player.y + 40, "#00ff00", 10);
+                canDoubleJump = false;
+                didJump = true;
+            }
+        }
+    }
+}
+
+function release() { input = false; inputPressed = false; }
+window.addEventListener('keyup', e => { if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter') release(); });
+window.addEventListener('mousedown', jump);
+window.addEventListener('mouseup', release);
+
+// SKILL ACTIVATION
+function activateSkill(slotIdx) {
+    if (gameState !== 'PLAYING') return;
+    const skillId = userData.equippedSkills[slotIdx];
+    if (skillId === null || skillId === undefined) return;
+    
+    const state = activeSkills[slotIdx];
+    if (state.active || state.cooldownTimer > 0) return;
+
+    const skill = SKILLS.find(s => s.id === skillId);
+    if (!skill) return;
+
+    state.active = true;
+    state.effect = skill.id;
+    state.timer = skill.duration;
+    state.cooldownTimer = skill.cooldown;
+    
+    // Immediate Effects
+    if (skill.id === 0) createExplosion(player.x, player.y, "#00ffcc", 20); // Shield
+    if (skill.id === 1) { player.dy = (gravityInverted || isAntiGravity) ? 30 : -30; createExplosion(player.x, player.y, "#ff0000", 30); } // Rocket Jump
+    if (skill.id === 4) createExplosion(player.x, player.y, "#ff0000", 30); // Excavadora
+    if (skill.id === 6 || skill.id === 21) createExplosion(player.x, player.y, "#ffff00", 20); // Flash / Frenesi
+    if (skill.id === 7) { createExplosion(player.x, player.y, "#ff00ff", 30); player.mode = 'SHIP'; }
+    if (skill.id === 8) { canDoubleJump = true; } 
+    if (skill.id === 9 || skill.id === 20) { player.x += (skill.id===20 ? 400 : 300); createExplosion(player.x-100, player.y, "#00ffff", 20); } // Dash / Ninja
+    if (skill.id === 10) { player.dy = 0; } // Freeze
+    if (skill.id === 12) { isAntiGravity = !isAntiGravity; player.dy = 0; } // Anti-Gravity
+    if (skill.id === 13) { player.y -= 200; } // Teleport Up
+    if (skill.id === 14) { player.y += 200; } // Teleport Down
+    if (skill.id === 15) { player.dy = (gravityInverted || isAntiGravity) ? -50 : 50; } // Ancla
+    if (skill.id === 16) { map.push({x: player.x, y: player.y + 60, w: 200, h: 40, type: '#'}); } // Constructor
+    if (skill.id === 17) { player.w = 100; player.h = 100; player.y -= 60; } // Mega Cubo
+    if (skill.id === 18) { // Minero
+        map.forEach(o => { if(o.type === '#' && o.x > player.x && o.x < player.x+200 && o.y > player.y) o.destroyed = true; });
+    }
+    if (skill.id === 22) { player.dy = 0; } // Levitacion
+    if (skill.id === 23) { bounceMode = true; } // Rebote
+    if (skill.id === 24) { doubleGemValue = true; } // Monedero
+    if (skill.id === 25) { /* Chronos handled in update loop */ createExplosion(player.x, player.y, "#88f", 20); }
+    if (skill.id === 26) { /* Midas handled on collision */ createExplosion(player.x, player.y, "#ffd700", 20); }
+    if (skill.id === 27) { createExplosion(player.x, player.y, "#0f0", 30); } // Salto Titan effect only visual here
+    if (skill.id === 28) { createExplosion(player.x, player.y, "#aaa", 15); } // Phase shift visual
+}
+
+function hasSkillEffect(effectId) {
+    return (activeSkills[0].active && activeSkills[0].effect === effectId) || 
+           (activeSkills[1].active && activeSkills[1].effect === effectId);
+}
+
+function parseLevel(index) {
+    const level = allLevels[index];
+    const rawMap = level.map;
+    const rotations = level.rotations || [];
+    
+    mapImages = level.images || []; 
+    mapTexts = level.texts || []; 
+    map = []; 
+    const cols = rawMap[0] ? rawMap[0].length : 60;
+    mapWidthPixels = cols * TILE;
+    
+    const rows = rawMap.length;
+    const startY = canvas.height - rows * TILE;
+    winXPosition = 0;
+    const calculatedFloorY = startY + (rows - 1) * TILE;
+
+    for(let r=0; r<rows; r++) {
+        for(let c=0; c<rawMap[r].length; c++) {
+            const char = rawMap[r][c];
+            const objX = c * TILE;
+            const objY = startY + r * TILE;
+            if(char !== ' ') { 
+                const rotData = rotations.find(rt => rt.c === c && rt.r === r);
+                const rotation = rotData ? rotData.deg : 0;
+                map.push({ x: objX, y: objY, type: char, w: TILE, h: TILE, rot: rotation }); 
+                if (char === 'F') winXPosition = Math.max(winXPosition, objX); 
+            }
+        }
+    }
+    return calculatedFloorY;
+}
+
+function startGame(idx) {
+    currentLevelIdx = idx; 
+    floorLevel = parseLevel(idx);
+    
+    player.x = 200; player.y = floorLevel - 50; player.dy = 0; player.mode = 'CUBE'; player.rotation = 0; player.dead = false; player.trail = []; player.w = 40; player.h = 40;
+    particles = []; cameraX = 0; shake = 0; gravityInverted = false; SPEED = 11; gameState = 'PLAYING';
+    levelGemsCollected = 0;
+    
+    activeSkills.forEach(s => { s.active = false; s.timer = 0; s.cooldownTimer = 0; s.effect = null; });
+    canDoubleJump = false;
+    isAntiGravity = false;
+    doubleGemValue = false;
+    bounceMode = false;
+
+    playMusic(`level_${idx}`);
+    updateMissionProgress('play');
+    document.querySelectorAll('.menu-box, .popup-box, .top-widgets, .menu-btn-container').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.modal-overlay').forEach(e => e.style.display = 'none');
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('ingamePercent').style.display = 'block';
+    
+    const color = allLevels[idx].colorHex;
+    document.getElementById('progressFill').style.backgroundColor = color;
+    document.getElementById('progressFill').style.boxShadow = `0 0 20px ${color}`;
+
+    updateSkillButtonsUI();
+}
+
+function updateSkillButtonsUI() {
+    const wrapper = document.getElementById('skillButtonsWrapper');
+    let hasSkill = false;
+    
+    [0, 1].forEach(slot => {
+        const id = userData.equippedSkills[slot];
+        const btn = document.getElementById(`skillBtn${slot+1}`);
+        if(id !== null && id !== undefined) {
+            hasSkill = true;
+            const s = SKILLS.find(sk => sk.id === id);
+            btn.style.display = 'flex';
+            btn.style.background = s.style;
+            document.getElementById(`skillIcon${slot+1}`).innerText = s.icon;
+            document.getElementById(`skillName${slot+1}`).innerText = s.name;
+            // Update key display
+            const k = userData.skillKeys[slot].replace('Key', '');
+            document.getElementById(`skillKeyDisplay${slot+1}`).innerText = k;
+        } else {
+            btn.style.display = 'none';
+        }
+    });
+
+    if(hasSkill) wrapper.style.display = 'flex';
+    else wrapper.style.display = 'none';
+}
+
+function restartLevel() { startGame(currentLevelIdx); }
+
+function showMainMenu() {
+    gameState = 'MENU';
+    if(currentSource) { currentSource.pause(); currentSource = null; }
+    playMusic('menu');
+    document.getElementById('mainMenu').style.display = 'flex';
+    document.querySelector('.top-widgets').style.display = 'flex';
+    document.querySelector('.menu-btn-container').style.display = 'flex';
+    document.getElementById('deathMenu').style.display = 'none';
+    document.getElementById('winMenu').style.display = 'none';
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('ingamePercent').style.display = 'none';
+    document.getElementById('skillButtonsWrapper').style.display = 'none';
+    determineActiveLevel(); 
+}
+
+function update() {
+    bgOffset += 2;
+    if (gameState !== 'PLAYING') return;
+
+    let timeScale = 1.0;
+    let extraSpeed = 0;
+    
+    // Apply Skill Effects first to calculate timeScale
+    if (hasSkillEffect(25)) timeScale = 0.5; // Chronos
+
+    activeSkills.forEach((state, idx) => {
+        if (state.active) {
+            state.timer -= 16;
+            if (state.timer <= 0) {
+                state.active = false;
+                if(state.effect === 3) { player.w = 40; player.h = 40; player.y -= 20; }
+                if(state.effect === 17) { player.w = 40; player.h = 40; }
+                if(state.effect === 7) { player.mode = 'CUBE'; } 
+                if(state.effect === 10 || state.effect === 22) { player.dy = 0; }
+                if(state.effect === 12) { isAntiGravity = false; }
+                if(state.effect === 23) { bounceMode = false; }
+                if(state.effect === 24) { doubleGemValue = false; }
+            } else {
+                if(state.effect === 2) { 
+                    map.forEach(obj => {
+                        if (obj.type === 'G') {
+                            const dx = player.x - obj.x; const dy = player.y - obj.y; const dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist < 400 && dist > 10) { obj.x += (dx/dist) * 15; obj.y += (dy/dist) * 15; }
+                        }
+                    });
+                }
+                if(state.effect === 3) { player.w = 20; player.h = 20; }
+                if(state.effect === 6 || state.effect === 21) { extraSpeed = 12; createExplosion(player.x, player.y + 20, '#ffff00', 1); }
+                if(state.effect === 10 || state.effect === 22) { player.dy = 0; } 
+                if(state.effect === 19) { createExplosion(player.x-60, player.y, "#660066", 2); } // Clon visual
+                if(state.effect === 21) { // Frenesi
+                     map.forEach(obj => { if((obj.type==='#'||obj.type==='^') && Math.abs(obj.x - player.x) < 60) obj.destroyed=true; });
+                }
+            }
+        }
+        if (state.cooldownTimer > 0) state.cooldownTimer -= 16;
+    });
+    
+    updateSkillOverlayUI();
+
+    const percent = Math.min(Math.floor((player.x / mapWidthPixels) * 100), 100);
+    document.getElementById('ingamePercent').innerText = percent + "%";
+
+    const currentSpeed = (SPEED + extraSpeed) * timeScale;
+    let grav = GRAVITY;
+    if(hasSkillEffect(5)) grav = GRAVITY * 0.4;
+
+    let effectiveGravityInverted = gravityInverted;
+    if(isAntiGravity) effectiveGravityInverted = !effectiveGravityInverted;
+
+    if (player.mode === 'CUBE') {
+        player.dy += (effectiveGravityInverted ? -grav : grav) * timeScale;
+        if (!player.onGround) player.rotation += (effectiveGravityInverted ? -0.15 : 0.15) * timeScale;
+        else {
+            player.rotation = Math.round(player.rotation / (Math.PI/2)) * (Math.PI/2);
+            if(hasSkillEffect(8)) canDoubleJump = true; 
+        }
+    } else {
+        if (input) player.dy += (effectiveGravityInverted ? -SHIP_LIFT : SHIP_LIFT) * timeScale; 
+        else player.dy += (effectiveGravityInverted ? -SHIP_GRAVITY : SHIP_GRAVITY) * timeScale;
+        player.dy *= 0.96; player.rotation = player.dy * 0.1;
+    }
+
+    player.y += player.dy * timeScale; 
+    player.x += currentSpeed; 
+    player.onGround = false;
+
+    const prevY = player.y - (player.dy * timeScale);
+
+    if (!effectiveGravityInverted) {
+        if (player.y > floorLevel - player.h) {
+            player.y = floorLevel - player.h; player.dy = 0; player.onGround = true;
+        }
+    }
+
+    checkCollisions(prevY, effectiveGravityInverted);
+    
+    if(player.y > canvas.height + 800 || player.y < -800) die();
+    if (winXPosition > 0 && player.x > winXPosition + 500) die();
+
+    cameraX = player.x - 300; 
+    if(shake > 0) shake *= 0.9; if(shake < 0.5) shake = 0;
+    
+    player.trail.push({x: player.x, y: player.y, r: player.rotation, a: 1.0, w: player.w, h: player.h});
+    for(let i=player.trail.length-1; i>=0; i--) { player.trail[i].a -= 0.04; if(player.trail[i].a <= 0) player.trail.splice(i, 1); }
+}
+
+function updateSkillOverlayUI() {
+    [0, 1].forEach(slot => {
+        const id = userData.equippedSkills[slot];
+        if(id !== null && id !== undefined) {
+            const s = SKILLS.find(x => x.id === id);
+            const overlay = document.getElementById(`skillOverlay${slot+1}`);
+            const btn = document.getElementById(`skillBtn${slot+1}`);
+            const state = activeSkills[slot];
+            
+            if (state.active) {
+                btn.classList.add('active-skill'); btn.classList.remove('disabled-skill'); overlay.style.height = "0%";
+            } else if (state.cooldownTimer > 0) {
+                btn.classList.remove('active-skill'); btn.classList.add('disabled-skill');
+                const pct = (state.cooldownTimer / s.cooldown) * 100; overlay.style.height = pct + "%";
+            } else {
+                btn.classList.remove('active-skill'); btn.classList.remove('disabled-skill'); overlay.style.height = "0%";
+            }
+        }
+    });
+}
+
+function checkCollisions(prevY, effectiveGravityInverted) {
+    const padding = 8; const px = player.x + padding; const py = player.y + padding; const pw = player.w - padding*2; const ph = player.h - padding*2;
+    const nearby = map.filter(obj => obj.x > player.x - 150 && obj.x < player.x + 150 && !obj.destroyed);
+
+    for (let obj of nearby) {
+        if (obj.collected) continue; 
+        let ox = obj.x; let oy = obj.y; let ow = obj.w; let oh = obj.h;
+        let isHazard = false;
+        if (obj.type === '^') { ox+=15; ow-=30; oy+=15; oh-=15; isHazard=true; } 
+        if (obj.type === '_') { oy+=40; oh-=40; }
+        if (obj.type === '-') { oy+=45; oh=20; } 
+        if (obj.type === 'G') { ox+=15; ow-=30; oy+=15; oh-=30; } 
+
+        if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) {
+            
+            if (isHazard && (hasSkillEffect(0) || hasSkillEffect(11))) continue; // Inmunidad/Fantasma
+            
+            // Excavadora / Frenesi / Mega Cubo / Phase Shift
+            if ((obj.type === '#' || obj.type === '-') && (hasSkillEffect(4) || hasSkillEffect(21) || hasSkillEffect(17))) {
+                obj.destroyed = true; createExplosion(obj.x + TILE/2, obj.y + TILE/2, '#888', 10); shake = 5; continue;
+            }
+            // Phase Shift logic (just ignore collisions with walls)
+            if ((obj.type === '#' || obj.type === '-') && hasSkillEffect(28)) {
+                continue; 
+            }
+
+            if (obj.type === '^') { die(); return; }
+            if (obj.type === 'F') { win(); return; }
+            if (obj.type === 'G') { 
+                obj.collected = true; 
+                let val = doubleGemValue ? 2 : 1;
+                if(hasSkillEffect(26)) val = 5; // Midas
+                levelGemsCollected += val; 
+                createExplosion(obj.x + 32, obj.y + 32, "#39ff14", 10); continue; 
+            }
+            if (obj.type === 'S') { player.mode = 'SHIP'; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#f0f', 15); continue; }
+            if (obj.type === 'C') { player.mode = 'CUBE'; player.w=40; player.h=40; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#0f0', 15); player.y = Math.round(player.y/10)*10; gravityInverted = false; continue; }
+            if (obj.type === 'O') { if (inputPressed) { player.dy = (effectiveGravityInverted ? -JUMP_FORCE : JUMP_FORCE) * 1.3; inputPressed = false; createExplosion(obj.x + TILE/2, obj.y + TILE/2, '#FF0', 20); shake = 8; } continue; }
+            if (obj.type === '_') { player.dy = (effectiveGravityInverted ? 1 : -1) * Math.abs(JUMP_FORCE * 1.5); player.onGround = false; createExplosion(obj.x + TILE/2, obj.y + TILE/2, '#FF0', 20); shake = 5; continue; }
+            if (obj.type === '>') { SPEED = 18; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#0FF', 10); continue; }
+            if (obj.type === '<') { SPEED = 8; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#008888', 10); continue; }
+            if (obj.type === 'M') { player.w = 20; player.h = 20; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#aa00aa', 10); continue; }
+            if (obj.type === 'B') { gravityInverted = !gravityInverted; player.dy = 0; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#00F', 20); continue; }
+
+            if (obj.type === '#' || obj.type === '-') {
+                if(bounceMode) { player.dy = -player.dy * 1.2; continue; } // Rebote
+
+                if (!effectiveGravityInverted) {
+                    if (prevY + player.h <= oy + 25) { player.y = oy - player.h + padding; player.dy = 0; player.onGround = true; } 
+                    else if (py > oy + oh - 20) { player.y = oy + oh - padding; player.dy = 0; if(player.mode === 'CUBE') die(); } 
+                    else { die(); }
+                } else {
+                    if (prevY >= oy + oh - 25) { player.y = oy + oh - padding; player.dy = 0; player.onGround = true; } 
+                    else if (py + ph < oy + 20) { player.y = oy - player.h + padding; player.dy = 0; if(player.mode === 'CUBE') die(); } 
+                    else { die(); }
+                }
+            }
+        }
+    }
+}
+
+function die() {
+    if(devSettings.godMode || hasSkillEffect(0)) return; 
+    if(player.dead) return;
+    player.dead = true; gameState = 'DEAD'; shake = 30;
+    
+    userData.gems += levelGemsCollected;
+    document.getElementById('deathGems').innerText = levelGemsCollected;
+
+    let percent = Math.floor((player.x / mapWidthPixels) * 100); if(percent > 100) percent = 99;
+    document.getElementById('percentText').innerText = percent + "%";
+    
+    if (!userData.levels[currentLevelIdx] || percent > userData.levels[currentLevelIdx].best) {
+        if (!userData.levels[currentLevelIdx]) userData.levels[currentLevelIdx] = {};
+        userData.levels[currentLevelIdx].best = percent; saveUserData();
+    }
+    
+    const color = allLevels[currentLevelIdx].colorHex;
+    createExplosion(player.x + 20, player.y + 20, color, 80);
+    setTimeout(() => { document.getElementById('deathMenu').style.display = 'block'; }, 800);
+}
+
+function win() {
+    gameState = 'WIN'; createExplosion(player.x, player.y, '#fff', 150);
+    if (!userData.levels[currentLevelIdx]) userData.levels[currentLevelIdx] = {};
+    userData.levels[currentLevelIdx].best = 100;
+    const earnedCups = 100; const rewardGems = allLevels[currentLevelIdx].diamonds + levelGemsCollected;
+    userData.totalCups += earnedCups; userData.gems += rewardGems;
+    updateMissionProgress('win'); 
+    document.getElementById('cupReward').innerText = earnedCups; document.getElementById('gemReward').innerText = allLevels[currentLevelIdx].diamonds; document.getElementById('winGems').innerText = levelGemsCollected;
+    saveUserData(); updateUI(); document.getElementById('winMenu').style.display = 'block';
+}
+
+function createExplosion(x, y, color, count) {
+    for(let i=0; i<count; i++) { particles.push({ x: x, y: y, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 1.0, color: color, size: Math.random()*12 }); }
+}
+
+function draw() {
+    ctx.save(); if(shake > 0) ctx.translate(Math.random()*shake - shake/2, Math.random()*shake - shake/2);
+    
+    let hue = 220; if(gameState === 'PLAYING') hue += Math.sin(Date.now() * 0.001) * 20; 
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, `hsl(${hue}, 60%, 15%)`); grad.addColorStop(1, `hsl(${hue}, 60%, 5%)`);
+    ctx.fillStyle = grad; ctx.fillRect(-shake, -shake, canvas.width+shake*2, canvas.height+shake*2);
+    
+    if (gameState === 'MENU') { ctx.restore(); return; }
+    
+    let hex = allLevels[currentLevelIdx].colorHex;
+    ctx.fillStyle = hex; ctx.globalAlpha = 0.2; ctx.fillRect(0, floorLevel, canvas.width, canvas.height - floorLevel); ctx.globalAlpha = 1; ctx.fillRect(0, floorLevel, canvas.width, 5);
+
+    ctx.translate(-cameraX, 0);
+
+    // IMAGES
+    mapImages.forEach(img => {
+        if(img.x > cameraX - img.w && img.x < cameraX + canvas.width) {
+            const imageEl = new Image(); imageEl.src = img.src; ctx.drawImage(imageEl, img.x, img.y, img.w, img.h);
+        }
+    });
+
+    // TEXTS
+    mapTexts.forEach(txt => {
+        if(txt.x > cameraX - 1000 && txt.x < cameraX + canvas.width) {
+            ctx.save();
+            ctx.fillStyle = txt.color;
+            ctx.font = `${txt.size}px ${txt.font}`;
+            ctx.fillText(txt.text, txt.x, txt.y);
+            ctx.restore();
+        }
+    });
+
+    const visibleMap = map.filter(o => o.x > cameraX - 100 && o.x < cameraX + canvas.width + 100 && !o.collected && !o.destroyed);
+
+    for (let obj of visibleMap) {
+        ctx.save();
+        if (obj.rot) { ctx.translate(obj.x + obj.w/2, obj.y + obj.h/2); ctx.rotate(obj.rot * Math.PI / 180); ctx.translate(-(obj.x + obj.w/2), -(obj.y + obj.h/2)); }
+
+        if (obj.type === '#') { ctx.fillStyle = 'black'; ctx.fillRect(obj.x, obj.y, TILE, TILE); ctx.strokeStyle = hex; ctx.lineWidth = 3; ctx.strokeRect(obj.x, obj.y, TILE, TILE); ctx.globalAlpha = 0.4; ctx.fillStyle = hex; ctx.fillRect(obj.x+15, obj.y+15, TILE-30, TILE-30); ctx.globalAlpha = 1; } 
+        else if (obj.type === '-') { ctx.fillStyle = 'black'; ctx.fillRect(obj.x, obj.y + 45, TILE, 20); ctx.strokeStyle = hex; ctx.lineWidth = 3; ctx.strokeRect(obj.x, obj.y + 45, TILE, 20); }
+        else if (obj.type === '^') { ctx.fillStyle = 'black'; ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(obj.x, obj.y + TILE); ctx.lineTo(obj.x + TILE/2, obj.y); ctx.lineTo(obj.x + TILE, obj.y + TILE); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#f00'; ctx.beginPath(); ctx.moveTo(obj.x+20, obj.y+50); ctx.lineTo(obj.x+32, obj.y+30); ctx.lineTo(obj.x+45, obj.y+50); ctx.fill(); } 
+        else if (obj.type === 'G') { const gx = obj.x + TILE/2; const gy = obj.y + TILE/2; const size = 18; ctx.translate(gx, gy); ctx.rotate(Math.sin(Date.now()/500)*0.2); ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.fillStyle = '#00ffff'; ctx.beginPath(); ctx.moveTo(0, -size); ctx.lineTo(size, 0); ctx.lineTo(0, size); ctx.lineTo(-size, 0); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = 'white'; ctx.stroke(); ctx.shadowBlur = 0; }
+        else if (obj.type === '_') { ctx.fillStyle = '#ff0'; ctx.fillRect(obj.x+5, obj.y+50, 55, 15); ctx.strokeStyle = 'white'; ctx.strokeRect(obj.x+5, obj.y+50, 55, 15); }
+        else if (obj.type === 'O') { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(obj.x+32, obj.y+32, 15, 0, Math.PI*2); ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='white'; ctx.stroke(); }
+        else if (obj.type === '>') { ctx.fillStyle = '#0FF'; ctx.beginPath(); ctx.moveTo(obj.x+10, obj.y+10); ctx.lineTo(obj.x+50, obj.y+32); ctx.lineTo(obj.x+10, obj.y+54); ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='white'; ctx.stroke(); }
+        else if (obj.type === '<') { ctx.fillStyle = '#008888'; ctx.beginPath(); ctx.moveTo(obj.x+50, obj.y+10); ctx.lineTo(obj.x+10, obj.y+32); ctx.lineTo(obj.x+50, obj.y+54); ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='white'; ctx.stroke(); }
+        else if (obj.type === 'M') { player.w = 20; player.h = 20; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#aa00aa', 10); continue; }
+        else if (obj.type === 'B') { gravityInverted = !gravityInverted; player.dy = 0; createExplosion(obj.x+TILE/2, obj.y+TILE/2, '#00F', 20); continue; }
+        else if (obj.type === 'S') { ctx.font='40px Arial'; ctx.fillText('✈️', obj.x+5, obj.y+45); }
+        else if (obj.type === 'C') { ctx.font='40px Arial'; ctx.fillText('🟩', obj.x+5, obj.y+45); }
+        else if (obj.type === 'M') { ctx.font='30px Arial'; ctx.fillText('🐭', obj.x+10, obj.y+45); }
+        else if (obj.type === 'F') { ctx.font='40px Arial'; ctx.fillText('🏁', obj.x+5, obj.y+45); }
+        ctx.restore();
+    }
+
+    const skinData = SKINS.find(s => s.id === userData.currentSkin);
+    const skinColor = skinData ? skinData.color : hex;
+    const trailData = TRAILS.find(tr => tr.id === userData.currentTrail);
+    
+    player.trail.forEach(t => {
+        ctx.save(); ctx.translate(t.x + t.w/2, t.y + t.h/2); ctx.rotate(t.r); ctx.globalAlpha = t.a * 0.4;
+        if (trailData && trailData.type === 'sparkle') { ctx.fillStyle = trailData.color; ctx.beginPath(); ctx.arc((Math.random()-0.5)*20, (Math.random()-0.5)*20, Math.random()*3+2, 0, Math.PI*2); ctx.fill(); } 
+        else if (trailData && trailData.type === 'rainbow') { ctx.fillStyle = `hsl(${(Date.now()/5 + t.x) % 360}, 100%, 50%)`; ctx.fillRect(-t.w/2, -t.h/2, t.w, t.h); } 
+        else { ctx.fillStyle = skinColor === 'rainbow' ? `hsl(${Date.now()/10 % 360}, 100%, 50%)` : skinColor; ctx.fillRect(-t.w/2, -t.h/2, t.w, t.h); }
+        ctx.restore();
+    });
+
+    if (!player.dead) {
+        ctx.save(); ctx.translate(player.x + player.w/2, player.y + player.h/2); ctx.rotate(player.rotation);
+        
+        if (hasSkillEffect(0)) { // Shield
+            ctx.shadowBlur = 20; ctx.shadowColor = "#00ffcc"; ctx.strokeStyle = "#00ffcc"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0,0, 35, 0, Math.PI*2); ctx.stroke(); ctx.shadowBlur = 0;
+        }
+
+        let playerColor = skinColor === 'rainbow' ? `hsl(${Date.now()/10 % 360}, 100%, 50%)` : skinColor;
+        if(player.mode !== 'CUBE') playerColor = '#F0F';
+        
+        ctx.fillStyle = playerColor; ctx.fillRect(-player.w/2, -player.h/2, player.w, player.h);
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.strokeRect(-player.w/2, -player.h/2, player.w, player.h);
+        ctx.fillStyle = 'black'; let eyeSize = player.w / 4; let eyeOffset = player.w / 4; ctx.fillRect(eyeOffset/2, (gravityInverted || isAntiGravity) ? 0 : -eyeOffset, eyeSize, eyeSize);
+        ctx.restore();
+    }
+
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.globalAlpha = 1; if(p.life <= 0) particles.splice(i, 1);
+    });
+
+    ctx.restore();
+    const percent = Math.min((player.x / mapWidthPixels)*100, 100);
+    document.getElementById('progressFill').style.width = percent + "%";
+}
+
+// ==================== EDITOR ====================
+let editorCanvas = document.getElementById('editorCanvas');
+let eCtx = editorCanvas.getContext('2d');
+let editorMap = []; let editorImages = []; let editorTexts = [];
+let editorTool = 'remove'; let editorActive = false; let editingIndex = -1; let isMouseDown = false;
+let editorMusicBlob = null; let editorCols = 60; const EDITOR_ROWS = 10; let EDITOR_TILE_SIZE = 20; let editorScrollX = 0; let editorRotation = 0;
+
+function openLevelCreatorMenu() { toggleModal('devSettingsModal'); toggleModal('levelCreatorMenu'); }
+
+function renderLevelCreatorList() {
+    const list = document.getElementById('editLevelList'); list.innerHTML = "";
+    allLevels.forEach((level, idx) => {
+        const div = document.createElement('div'); div.className = 'level-edit-item';
+        div.innerHTML = `<span style="color:${level.colorHex}; font-weight:bold;">${level.name}</span><div style="display:flex; gap:8px;"><button style="background:#ffd700; color:black; border:none; padding:5px 12px; border-radius:5px; font-weight:bold; cursor:pointer; font-size:11px;" onclick="editLevel(${idx})">✏️ EDITAR</button><button class="btn-delete-level" onclick="deleteLevel(${idx})">🗑️ ELIMINAR</button></div>`;
+        list.appendChild(div);
+    });
+}
+
+function deleteLevel(idx) { if(confirm(`⚠️ ¿ELIMINAR "${allLevels[idx].name}"?`)) { allLevels.splice(idx, 1); saveLevels(); renderLevelCreatorList(); generateLevelsGrid(); determineActiveLevel(); } }
+
+function editLevel(idx) {
+    editingIndex = idx; const level = allLevels[idx]; editorMap = []; editorImages = level.images || []; editorTexts = level.texts || [];
+    const rawMap = level.map; const rots = level.rotations || [];
+    editorCols = rawMap[0] ? rawMap[0].length : 60;
+    for(let r = 0; r < rawMap.length && r < EDITOR_ROWS; r++) {
+        const editorR = EDITOR_ROWS - rawMap.length + r;
+        if(editorR >= 0) {
+            for(let c = 0; c < rawMap[r].length && c < editorCols; c++) {
+                const char = rawMap[r][c];
+                if(char !== ' ') { const rt = rots.find(x => x.c === c && x.r === editorR); editorMap.push({ c: c, r: editorR, type: char, rot: rt ? rt.deg : 0 }); }
+            }
+        }
+    }
+    editorMusicBlob = level.musicBlob || null; initEditor(level.name, level.colorHex);
+}
+
+function startNewLevel() {
+    editingIndex = -1; editorMap = []; editorImages = []; editorTexts = []; editorCols = 60;
+    for(let c = 0; c < editorCols; c++) { editorMap.push({ c: c, r: EDITOR_ROWS - 1, type: '#' }); }
+    editorMap.push({ c: editorCols - 3, r: EDITOR_ROWS - 2, type: 'F' });
+    initEditor("NUEVO NIVEL", "#00ff00");
+}
+
+function initEditor(name, color) {
+    toggleModal('levelCreatorMenu'); document.getElementById('editorUI').style.display = 'block';
+    document.getElementById('editorLevelName').innerText = name; document.getElementById('levelColorPicker').value = color; document.getElementById('levelWidthInput').value = editorCols;
+    editorScrollX = 0; editorRotation = 0; updateRotBtn(); editorActive = true; resizeEditor(); requestAnimationFrame(editorLoop);
+}
+
+function toggleEditorRotation() { editorRotation = (editorRotation + 90) % 360; updateRotBtn(); }
+function updateRotBtn() { document.getElementById('rotDisplay').innerText = editorRotation + "°"; }
+
+function updateLevelWidth() {
+    const newWidth = parseInt(document.getElementById('levelWidthInput').value); if(newWidth < 20) return;
+    if(newWidth > editorCols) { for(let c = editorCols; c < newWidth; c++) { editorMap.push({ c: c, r: EDITOR_ROWS - 1, type: '#' }); } } else { editorMap = editorMap.filter(o => o.c < newWidth); }
+    editorCols = newWidth;
+}
+
+function handleEditorImageUpload(input) {
+    const file = input.files[0]; if(!file) return;
+    const reader = new FileReader(); reader.onload = function(e) { editorImages.push({ x: 100 + editorScrollX, y: 100, w: 100, h: 100, src: e.target.result }); alert("Imagen insertada."); }; reader.readAsDataURL(file);
+}
+
+function exitEditor() { if(confirm("¿Salir sin guardar?")) { editorActive = false; document.getElementById('editorUI').style.display = 'none'; } }
+
+function saveLevelPrompt() { const name = prompt("📝 Nombre del nivel:", document.getElementById('editorLevelName').innerText); if(!name) return; saveLevel(name, document.getElementById('levelColorPicker').value); }
+
+function saveLevel(name, color) {
+    let newMap = []; let rotArray = [];
+    for(let r = 0; r < EDITOR_ROWS; r++) {
+        let rowStr = "";
+        for(let c = 0; c < editorCols; c++) {
+            const obj = editorMap.find(o => o.c === c && o.r === r);
+            if (obj) { rowStr += obj.type; if(obj.rot !== 0) rotArray.push({c: c, r: r, deg: obj.rot}); } else { rowStr += " "; }
+        }
+        newMap.push(rowStr);
+    }
+    const maxCups = allLevels.length > 0 ? Math.max(...allLevels.map(l => l.cups)) : 0;
+    const levelData = { name: name, diff: "Custom", colorHex: color, cups: maxCups + 1000, diamonds: 500, map: newMap, rotations: rotArray, images: editorImages, texts: editorTexts, musicBlob: editorMusicBlob };
+    if(editingIndex === -1) allLevels.push(levelData); else allLevels[editingIndex] = levelData;
+    saveLevels(); editorActive = false; document.getElementById('editorUI').style.display = 'none'; generateLevelsGrid(); determineActiveLevel();
+}
+
+function selectTool(t) { editorTool = t; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('selected')); event.currentTarget.classList.add('selected'); }
+
+const editorVp = document.getElementById('editorViewport');
+
+function getEditorCoords(e) {
+    const rect = editorCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left + editorScrollX; 
+    return { x: mx, y: e.clientY - rect.top, c: Math.floor(mx / EDITOR_TILE_SIZE), r: Math.floor((e.clientY - rect.top) / EDITOR_TILE_SIZE) };
+}
+
+let isDraggingImage = false; let draggedImageIdx = -1; let dragOffsetX = 0; let dragOffsetY = 0;
+let isDraggingText = false; let draggedTextIdx = -1;
+
+editorCanvas.addEventListener('wheel', (e) => {
+    if(!editorActive) return; e.preventDefault();
+    editorScrollX += e.deltaY; if(editorScrollX < 0) editorScrollX = 0;
+}, { passive: false });
+
+editorVp.addEventListener('mousedown', (e) => {
+    if(!editorActive) return;
+    const coords = getEditorCoords(e);
+    const mx = coords.x; const my = coords.y;
+
+    // Check Texts first (Top Layer)
+    for(let i = editorTexts.length - 1; i >= 0; i--) {
+        const t = editorTexts[i];
+        eCtx.font = `${t.size}px ${t.font}`;
+        const w = eCtx.measureText(t.text).width;
+        const h = parseInt(t.size);
+        
+        // Better Text Collision
+        if(mx >= t.x && mx <= t.x + w && my >= t.y - h && my <= t.y + h/2) {
+            if(editorTool === 'remove') { editorTexts.splice(i, 1); return; }
+            isDraggingText = true; draggedTextIdx = i; dragOffsetX = mx - t.x; dragOffsetY = my - t.y; return;
+        }
+    }
+
+    // Check Images
+    for(let i = editorImages.length - 1; i >= 0; i--) {
+        const img = editorImages[i];
+        if(mx >= img.x && mx <= img.x + img.w && my >= img.y && my <= img.y + img.h) {
+             if(editorTool === 'remove') { editorImages.splice(i, 1); return; }
+            isDraggingImage = true; draggedImageIdx = i; dragOffsetX = mx - img.x; dragOffsetY = my - img.y; return;
+        }
+    }
+
+    if(editorTool === 'TEXT') {
+        const txt = prompt("Introduce el texto:");
+        if(txt) {
+            const size = prompt("Tamaño (px):", "40");
+            const color = prompt("Color (Hex o nombre):", "white");
+            const font = prompt("Fuente (Arial, Montserrat, 'Press Start 2P', 'Dancing Script'):", "Montserrat");
+            editorTexts.push({ x: mx, y: my, text: txt, size: size || 40, color: color || 'white', font: font || 'Montserrat' });
+        }
+        return;
+    }
+
+    isMouseDown = true; handleEditorClick(e);
+});
+
+editorVp.addEventListener('mousemove', (e) => {
+    if(!editorActive) return;
+    const coords = getEditorCoords(e);
+    if(isDraggingImage && draggedImageIdx !== -1) { editorImages[draggedImageIdx].x = coords.x - dragOffsetX; editorImages[draggedImageIdx].y = coords.y - dragOffsetY; return; }
+    if(isDraggingText && draggedTextIdx !== -1) { editorTexts[draggedTextIdx].x = coords.x - dragOffsetX; editorTexts[draggedTextIdx].y = coords.y - dragOffsetY; return; }
+    if(isMouseDown) handleEditorClick(e);
+});
+
+editorVp.addEventListener('mouseup', () => { isMouseDown = false; isDraggingImage = false; draggedImageIdx = -1; isDraggingText = false; draggedTextIdx = -1; });
+editorVp.addEventListener('mouseleave', () => { isMouseDown = false; isDraggingImage = false; draggedImageIdx = -1; });
+
+function handleEditorClick(e) {
+    if(!editorActive) return;
+    const {c, r} = getEditorCoords(e);
+    if(c < 0 || c >= editorCols || r < 0 || r >= EDITOR_ROWS) return;
+    const existingIdx = editorMap.findIndex(o => o.c === c && o.r === r);
+    if(editorTool === 'remove') { if(existingIdx !== -1) editorMap.splice(existingIdx, 1); } 
+    else { if(existingIdx !== -1) editorMap.splice(existingIdx, 1); editorMap.push({ c: c, r: r, type: editorTool, rot: editorRotation }); }
+}
+
+function resizeEditor() {
+    const vp = document.getElementById('editorViewport');
+    if(vp && editorCanvas) { editorCanvas.width = vp.clientWidth; editorCanvas.height = vp.clientHeight; EDITOR_TILE_SIZE = (editorCanvas.height - 20) / EDITOR_ROWS; }
+}
+window.addEventListener('resize', resizeEditor);
+
+function editorLoop() {
+    if(!editorActive) return;
+    eCtx.fillStyle = '#111'; eCtx.fillRect(0, 0, editorCanvas.width, editorCanvas.height);
+    const hex = document.getElementById('levelColorPicker').value;
+
+    eCtx.save(); eCtx.translate(-editorScrollX, 0);
+    const startCol = Math.floor(editorScrollX / EDITOR_TILE_SIZE); const endCol = startCol + Math.ceil(editorCanvas.width / EDITOR_TILE_SIZE) + 1;
+
+    // Images
+    editorImages.forEach((img, i) => {
+       if (img.x + img.w < editorScrollX || img.x > editorScrollX + editorCanvas.width) return;
+       const imageEl = new Image(); imageEl.src = img.src;
+       if(imageEl.complete && imageEl.naturalWidth !== 0) eCtx.drawImage(imageEl, img.x, img.y, img.w, img.h);
+       else { eCtx.fillStyle = 'rgba(255,255,255,0.1)'; eCtx.fillRect(img.x, img.y, img.w, img.h); eCtx.fillStyle = '#fff'; eCtx.fillText("IMG", img.x+5, img.y+15); }
+       eCtx.strokeStyle = (i === draggedImageIdx) ? '#ffff00' : '#00ffff'; eCtx.lineWidth = (i === draggedImageIdx) ? 2 : 1; eCtx.strokeRect(img.x, img.y, img.w, img.h);
+    });
+
+    // Texts
+    editorTexts.forEach((txt, i) => {
+        if (txt.x < editorScrollX || txt.x > editorScrollX + editorCanvas.width) return;
+        eCtx.save(); eCtx.fillStyle = txt.color; eCtx.font = `${txt.size}px ${txt.font}`; eCtx.fillText(txt.text, txt.x, txt.y); 
+        const w = eCtx.measureText(txt.text).width;
+        eCtx.restore();
+        
+        eCtx.strokeStyle = (i === draggedTextIdx) ? '#ffff00' : 'rgba(255,255,255,0.3)'; eCtx.lineWidth = 1; 
+        eCtx.strokeRect(txt.x, txt.y - parseInt(txt.size), w, parseInt(txt.size) + 5);
+    });
+
+    // Grid
+    eCtx.strokeStyle = '#222'; eCtx.lineWidth = 1;
+    for(let i = startCol; i <= endCol && i <= editorCols; i++) { eCtx.beginPath(); eCtx.moveTo(i * EDITOR_TILE_SIZE, 0); eCtx.lineTo(i * EDITOR_TILE_SIZE, EDITOR_ROWS * EDITOR_TILE_SIZE); eCtx.stroke(); }
+    for(let i = 0; i <= EDITOR_ROWS; i++) { eCtx.beginPath(); eCtx.moveTo(startCol * EDITOR_TILE_SIZE, i * EDITOR_TILE_SIZE); eCtx.lineTo(endCol * EDITOR_TILE_SIZE, i * EDITOR_TILE_SIZE); eCtx.stroke(); }
+    
+    // Objects
+    for(let obj of editorMap) {
+        if (obj.c < startCol || obj.c > endCol) continue;
+        const x = obj.c * EDITOR_TILE_SIZE; const y = obj.r * EDITOR_TILE_SIZE; const ts = EDITOR_TILE_SIZE;
+        eCtx.save(); if (obj.rot) { eCtx.translate(x + ts/2, y + ts/2); eCtx.rotate(obj.rot * Math.PI / 180); eCtx.translate(-(x + ts/2), -(y + ts/2)); }
+        if(obj.type === '#') { eCtx.fillStyle = 'black'; eCtx.fillRect(x, y, ts, ts); eCtx.strokeStyle = hex; eCtx.lineWidth = 2; eCtx.strokeRect(x, y, ts, ts); } 
+        else if(obj.type === '-') { eCtx.fillStyle = '#ccc'; eCtx.fillRect(x, y+ts/2, ts, ts/2); }
+        else if(obj.type === 'G') { eCtx.fillStyle = '#39ff14'; eCtx.beginPath(); eCtx.moveTo(x + ts/2, y); eCtx.lineTo(x + ts, y + ts/2); eCtx.lineTo(x + ts/2, y + ts); eCtx.lineTo(x, y + ts/2); eCtx.fill(); }
+        else if(obj.type === '^') { eCtx.fillStyle = '#f00'; eCtx.beginPath(); eCtx.moveTo(x, y + ts); eCtx.lineTo(x + ts/2, y); eCtx.lineTo(x + ts, y + ts); eCtx.fill(); }
+        else if(obj.type === 'O') { eCtx.fillStyle = '#ffff00'; eCtx.beginPath(); eCtx.arc(x + ts/2, y + ts/2, ts*0.35, 0, Math.PI*2); eCtx.fill(); eCtx.strokeStyle = 'white'; eCtx.lineWidth = 2; eCtx.stroke(); }
+        else if(obj.type === '_') { eCtx.fillStyle = '#ffff00'; eCtx.beginPath(); eCtx.arc(x + ts/2, y + ts, ts*0.5, Math.PI, 0); eCtx.fill(); }
+        else if(obj.type === 'S') { eCtx.fillStyle = '#ff00ff'; eCtx.globalAlpha = 0.3; eCtx.fillRect(x,y,ts,ts); eCtx.globalAlpha = 1; eCtx.font = `${ts*0.8}px Arial`; eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle'; eCtx.fillStyle = 'white'; eCtx.fillText('✈️', x + ts/2, y + ts/2); }
+        else if(obj.type === 'C') { eCtx.fillStyle = '#00ff00'; eCtx.globalAlpha = 0.3; eCtx.fillRect(x,y,ts,ts); eCtx.globalAlpha = 1; eCtx.font = `${ts*0.8}px Arial`; eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle'; eCtx.fillStyle = 'white'; eCtx.fillText('🟩', x + ts/2, y + ts/2); }
+        else if(obj.type === 'F') { eCtx.font = `${ts*0.9}px Arial`; eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle'; eCtx.fillStyle = 'white'; eCtx.fillText('🏁', x + ts/2, y + ts/2); }
+        else if(obj.type === '>') { eCtx.fillStyle = '#00ffff'; eCtx.beginPath(); eCtx.moveTo(x + ts*0.2, y + ts*0.2); eCtx.lineTo(x + ts*0.8, y + ts/2); eCtx.lineTo(x + ts*0.2, y + ts*0.8); eCtx.fill(); }
+        else if(obj.type === '<') { eCtx.fillStyle = '#008888'; eCtx.beginPath(); eCtx.moveTo(x + ts*0.8, y + ts*0.2); eCtx.lineTo(x + ts*0.2, y + ts/2); eCtx.lineTo(x + ts*0.8, y + ts*0.8); eCtx.fill(); }
+        else if(obj.type === 'B') { eCtx.fillStyle = '#0000ff'; eCtx.beginPath(); eCtx.arc(x + ts/2, y + ts, ts*0.5, Math.PI, 0); eCtx.fill(); eCtx.fillStyle = 'white'; eCtx.font = `${ts*0.4}px Arial`; eCtx.textAlign = 'center'; eCtx.fillText('G', x+ts/2, y+ts*0.8); }
+        eCtx.restore();
+    }
+    
+    eCtx.restore();
+    requestAnimationFrame(editorLoop);
+}
+
+// ==================== FUNCIONES DEVELOPER ====================
+
+function checkDevAuth() {
+    // Esta función permite el acceso developer desde dentro del juego si ya estás logueado
+    const user = document.getElementById('devUser').value.trim();
+    const pass = document.getElementById('devPass').value.trim();
+    let success = false;
+
+    if (user === "Leo" && pass === "4102") success = true;
+    else if (user === "Hugo" && pass === "0227") success = true;
+    else if (user === "Pedro" && pass === "1620") success = true;
+
+    if (success) {
+        isDevMode = true;
+        document.getElementById('devModal').style.display = 'none';
+        document.getElementById('devSettingsWidget').style.display = 'flex';
+        document.getElementById('devExitWidget').style.display = 'flex';
+        generateLevelsGrid(); 
+        alert(`✅ ACCESO CONCEDIDO: Bienvenido ${user}`);
+    } else {
+        alert("❌ CREDENCIALES INCORRECTAS");
+    }
+}
+
+function toggleDevSetting(setting) {
+    if (!isDevMode) return;
+    devSettings[setting] = !devSettings[setting];
+    
+    const btnId = setting === 'godMode' ? 'toggleGod' : 'toggleInfGems';
+    const btn = document.getElementById(btnId);
+    
+    if (devSettings[setting]) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+    updateUI(); 
+}
+
+function devAddCups() {
+    if (!isDevMode) return;
+    userData.totalCups += 500;
+    saveUserData();
+    updateUI();
+    if(document.getElementById('trophyRoadModal').style.display === 'flex') {
+        generateTrophyRoad();
+    }
+}
+
+function exitDevMode() {
+    isDevMode = false;
+    devSettings.godMode = false;
+    devSettings.infGems = false;
+    
+    document.getElementById('toggleGod').classList.remove('active');
+    document.getElementById('toggleInfGems').classList.remove('active');
+    
+    document.getElementById('devSettingsWidget').style.display = 'none';
+    document.getElementById('devExitWidget').style.display = 'none';
+    document.getElementById('devSettingsModal').style.display = 'none';
+    
+    generateLevelsGrid(); 
+    updateUI();
+    alert("🔒 Has salido del modo Developer");
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+</script>
+</body>
+</html>

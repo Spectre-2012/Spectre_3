@@ -242,18 +242,20 @@
 
     <div class="save-indicator" id="saveIndicator">💾 GUARDADO PERMANENTE</div>
     <div class="storage-info" id="storageInfo">📁 Cargando...</div>
-
-    <div id="loginScreen">
-        <div class="login-box">
-            <div class="login-title">🔒 Acceso Restringido</div>
-            <div class="login-subtitle">Sistema de Seguridad v5.0</div>
-            <div class="login-label">Nombre de Usuario</div>
-            <input type="text" id="userInput" class="login-input login-input-user" placeholder="Tu nombre...">
-            <div class="login-label">Código de Acceso</div>
-            <input type="password" id="passInput" class="login-input" placeholder="••••">
-            <button class="login-btn" onclick="checkPassword()">ENTRAR</button>
-            <div id="errorMsg" class="error-msg">❌ CÓDIGO INCORRECTO</div>
-        </div>
+<div id="loginScreen">
+    <div class="login-box">
+        <!-- ⭐⭐⭐ TU LOGO ASCII AQUI ⭐⭐⭐ -->
+        <pre style="color: #00ffcc; font-size: 11px; margin: 0 0 15px 0; line-height: 1.2; font-family: 'Courier New', monospace; text-align: center;">
+███████╗██████╗ ███████╗ ██████╗████████╗██████╗ ███████╗
+██╔════╝██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝
+███████╗██████╔╝█████╗  ██║        ██║   ██████╔╝█████╗  
+╚════██║██╔═══╝ ██╔══╝  ██║        ██║   ██╔══██╗██╔══╝  
+███████║██║     ███████╗╚██████╗   ██║   ██║  ██║███████╗
+╚══════╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝
+        </pre>
+        <div class="login-title">🔒 Acceso Restringido</div>
+        <div class="login-subtitle">Sistema de Seguridad v5.0</div>
+   
     </div>
 
     <div id="loadingScreen">

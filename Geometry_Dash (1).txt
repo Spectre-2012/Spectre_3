@@ -1,0 +1,9 @@
+function checkPassword(username, password) {
+    const validCredentials = {
+        "Leo": "4102",
+        "Hugo": "0227",
+        "Pedro": "1620"
+    };
+
+    return validCredentials[username] === password;
+}

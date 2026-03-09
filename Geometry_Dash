@@ -910,7 +910,7 @@ function claimMission(idx) {
     saveUserData(); updateUI(); renderMissions();
 }
 
-// ==================== FUNCIONES PRINCIPALES (AUTH UPDATE) ====================
+// ==================== FUNCIONES PRINCIPALES (AUTH UPDATE - SOLO DEVELOPER) ====================
 function checkPassword() {
     const username = document.getElementById('userInput').value.trim();
     const password = document.getElementById('passInput').value;
@@ -924,32 +924,26 @@ function checkPassword() {
     isDevMode = false;
     let accessGranted = false;
 
-    // Verificar Cuentas Developer
+    // SOLO Cuentas Developer - Sin acceso normal
     if (username === "Leo" && password === "4102") {
         accessGranted = true; isDevMode = true;
     } else if (username === "Hugo" && password === "0227") {
         accessGranted = true; isDevMode = true;
     } else if (username === "Pedro" && password === "1620") {
         accessGranted = true; isDevMode = true;
-    } 
-    // Verificar Jugador Normal
-    else if (password === "5042") {
-        accessGranted = true;
     }
 
     if (accessGranted) {
         currentUsername = username;
         document.getElementById('loginScreen').style.display = 'none';
         
-        // Si entra con dev mode desde el login, activar botones
-        if (isDevMode) {
-            document.getElementById('devSettingsWidget').style.display = 'flex';
-            document.getElementById('devExitWidget').style.display = 'flex';
-        }
+        // Activar botones dev (siempre, porque solo devs pueden entrar)
+        document.getElementById('devSettingsWidget').style.display = 'flex';
+        document.getElementById('devExitWidget').style.display = 'flex';
 
         startLoading();
     } else {
-        document.getElementById('errorMsg').innerText = "❌ CÓDIGO INCORRECTO";
+        document.getElementById('errorMsg').innerText = "❌ CREDENCIALES DE DEVELOPER INCORRECTAS";
         document.getElementById('errorMsg').style.display = 'block';
     }
 }
